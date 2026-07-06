@@ -1,0 +1,98 @@
+{
+  "common": {
+    "loading": "Загрузка...",
+    "save": "Сохранить",
+    "cancel": "Отмена",
+    "create": "Создать",
+    "edit": "Редактировать",
+    "delete": "Удалить",
+    "add": "Добавить",
+    "all": "Все",
+    "back": "Назад",
+    "backToCategories": "Назад к категориям",
+    "backToMenu": "Назад к меню",
+    "search": "Поиск блюд...",
+    "noResults": "По запросу ничего не найдено.",
+    "emptySection": "В этом разделе пока нет позиций.",
+    "emptyMenu": "Меню пока не настроено.",
+    "emptyCategories": "Категории пока не настроены.",
+    "confirmDelete": "Удалить?",
+    "translated": "Переведено: {{count}} языков",
+    "translationError": "Ошибка перевода",
+    "translate": "Перевести",
+    "sort": "Сортировка",
+    "name": "Название",
+    "price": "Цена",
+    "weight": "Вес",
+    "actions": "Действия",
+    "code": "Код",
+    "currency": "сум",
+    "upload": "Загрузить",
+    "change": "Изменить"
+  },
+  "home": {
+    "title": "Наше меню",
+    "restaurantName": "Kazan Restaurant",
+    "mainMenu": "Основное меню",
+    "barMenu": "Барное меню"
+  },
+  "languagePicker": {
+    "title": "Kazan",
+    "subtitle": "Выберите язык / Choose language"
+  },
+  "admin": {
+    "menuTypes": {
+      "title": "Типы меню",
+      "newTitle": "Новый тип меню",
+      "editTitle": "Редактировать тип меню",
+      "codePlaceholder": "main"
+    },
+    "categories": {
+      "title": "Категории",
+      "newTitle": "Новая категория",
+      "editTitle": "Редактировать категорию"
+    },
+    "menuItems": {
+      "title": "Блюда",
+      "newTitle": "Новое блюдо",
+      "editTitle": "Редактировать блюдо",
+      "nameRu": "Название (RU)",
+      "nameEn": "Название (EN)",
+      "descriptionRu": "Описание (RU)",
+      "weightPlaceholder": "250 гр."
+    },
+    "login": {
+      "title": "Вход в админку",
+      "email": "Email",
+      "password": "Пароль",
+      "signIn": "Войти",
+      "signingIn": "Вход...",
+      "success": "Вход выполнен"
+    },
+    "nav": {
+      "menuTypes": "Типы меню",
+      "categories": "Категории",
+      "menuItems": "Блюда",
+      "languages": "Языки",
+      "settings": "Настройки",
+      "logout": "Выйти"
+    },
+    "languages": {
+      "title": "Языки",
+      "newTitle": "Новый язык"
+    }
+  },
+  "toast": {
+    "created": "Создано",
+    "updated": "Обновлено",
+    "deleted": "Удалено"
+  },
+  "errors": {
+    "fetchFailed": "Не удалось загрузить",
+    "createFailed": "Не удалось создать",
+    "updateFailed": "Не удалось обновить",
+    "deleteFailed": "Не удалось удалить",
+    "loginFailed": "Ошибка входа",
+    "translationFailed": "Ошибка перевода"
+  }
+}

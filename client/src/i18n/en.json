@@ -1,0 +1,98 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "save": "Save",
+    "cancel": "Cancel",
+    "create": "Create",
+    "edit": "Edit",
+    "delete": "Delete",
+    "add": "Add",
+    "all": "All",
+    "back": "Back",
+    "backToCategories": "Back to categories",
+    "backToMenu": "Back to menu",
+    "search": "Search dishes...",
+    "noResults": "No results found.",
+    "emptySection": "No items in this section yet.",
+    "emptyMenu": "Menu not configured yet.",
+    "emptyCategories": "No categories configured yet.",
+    "confirmDelete": "Delete?",
+    "translated": "Translated: {{count}} languages",
+    "translationError": "Translation error",
+    "translate": "Translate",
+    "sort": "Sort",
+    "name": "Name",
+    "price": "Price",
+    "weight": "Weight",
+    "actions": "Actions",
+    "code": "Code",
+    "currency": "sum",
+    "upload": "Upload",
+    "change": "Change"
+  },
+  "home": {
+    "title": "Our Menu",
+    "restaurantName": "Kazan Restaurant",
+    "mainMenu": "Main Menu",
+    "barMenu": "Bar Menu"
+  },
+  "languagePicker": {
+    "title": "Kazan",
+    "subtitle": "Choose language / Выберите язык"
+  },
+  "admin": {
+    "menuTypes": {
+      "title": "Menu Types",
+      "newTitle": "New Menu Type",
+      "editTitle": "Edit Menu Type",
+      "codePlaceholder": "main"
+    },
+    "categories": {
+      "title": "Categories",
+      "newTitle": "New Category",
+      "editTitle": "Edit Category"
+    },
+    "menuItems": {
+      "title": "Menu Items",
+      "newTitle": "New Menu Item",
+      "editTitle": "Edit Menu Item",
+      "nameRu": "Name (RU)",
+      "nameEn": "Name (EN)",
+      "descriptionRu": "Description (RU)",
+      "weightPlaceholder": "250 g"
+    },
+    "login": {
+      "title": "Admin Login",
+      "email": "Email",
+      "password": "Password",
+      "signIn": "Sign in",
+      "signingIn": "Signing in...",
+      "success": "Logged in"
+    },
+    "nav": {
+      "menuTypes": "Menu Types",
+      "categories": "Categories",
+      "menuItems": "Menu Items",
+      "languages": "Languages",
+      "settings": "Settings",
+      "logout": "Logout"
+    },
+    "languages": {
+      "title": "Languages",
+      "newTitle": "New Language"
+    }
+  },
+  "toast": {
+    "created": "Created",
+    "updated": "Updated",
+    "deleted": "Deleted"
+  },
+  "errors": {
+    "fetchFailed": "Failed to fetch",
+    "createFailed": "Failed to create",
+    "updateFailed": "Failed to update",
+    "deleteFailed": "Failed to delete",
+    "loginFailed": "Login failed",
+    "translationFailed": "Translation failed"
+  }
+}

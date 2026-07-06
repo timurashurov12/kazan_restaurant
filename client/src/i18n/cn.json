@@ -1,0 +1,96 @@
+{
+  "common": {
+    "loading": "",
+    "save": "",
+    "cancel": "",
+    "create": "",
+    "edit": "",
+    "delete": "",
+    "add": "",
+    "all": "",
+    "back": "",
+    "backToCategories": "",
+    "backToMenu": "",
+    "search": "",
+    "noResults": "",
+    "emptySection": "",
+    "emptyMenu": "",
+    "emptyCategories": "",
+    "confirmDelete": "",
+    "translated": "",
+    "translationError": "",
+    "translate": "",
+    "sort": "",
+    "name": "",
+    "price": "",
+    "weight": "",
+    "actions": "",
+    "code": "",
+    "currency": ""
+  },
+  "home": {
+    "title": "",
+    "restaurantName": "",
+    "mainMenu": "",
+    "barMenu": ""
+  },
+  "languagePicker": {
+    "title": "",
+    "subtitle": ""
+  },
+  "admin": {
+    "menuTypes": {
+      "title": "",
+      "newTitle": "",
+      "editTitle": "",
+      "codePlaceholder": ""
+    },
+    "categories": {
+      "title": "",
+      "newTitle": "",
+      "editTitle": ""
+    },
+    "menuItems": {
+      "title": "",
+      "newTitle": "",
+      "editTitle": "",
+      "nameRu": "",
+      "nameEn": "",
+      "descriptionRu": "",
+      "weightPlaceholder": ""
+    },
+    "login": {
+      "title": "",
+      "email": "",
+      "password": "",
+      "signIn": "",
+      "signingIn": "",
+      "success": ""
+    },
+    "nav": {
+      "menuTypes": "",
+      "categories": "",
+      "menuItems": "",
+      "languages": "",
+      "settings": "",
+      "logout": ""
+    },
+    "languages": {
+      "title": "",
+      "newTitle": ""
+    }
+  },
+  "toast": {
+    "created": "",
+    "updated": "",
+    "deleted": ""
+  },
+  "errors": {
+    "fetchFailed": "",
+    "createFailed": "",
+    "updateFailed": "",
+    "deleteFailed": "",
+    "loginFailed": "",
+    "translationFailed": ""
+  }
+}

@@ -1,0 +1,120 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Language {
+  id        String   @id @default(cuid())
+  code      String   @unique @db.VarChar(10)
+  name      String?
+  sortOrder Int      @default(0)
+}
+
+model Menu {
+  id        String   @id @default(cuid())
+  name      String   @db.VarChar(120)
+  sortOrder Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  menuTypes MenuType[]
+}
+
+model MenuType {
+  id        String   @id @default(cuid())
+  menuId    String
+  code      String   @db.VarChar(30)
+  sortOrder Int      @default(0)
+  isActive  Boolean  @default(true)
+  imagePath String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  menu         Menu                  @relation(fields: [menuId], references: [id], onDelete: Cascade)
+  translations MenuTypeTranslation[]
+  categories   Category[]
+
+  @@unique([menuId, code])
+}
+
+model MenuTypeTranslation {
+  id         String   @id @default(cuid())
+  menuTypeId String
+  locale     String   @db.VarChar(10)
+  name       String
+  menuType   MenuType @relation(fields: [menuTypeId], references: [id], onDelete: Cascade)
+
+  @@unique([menuTypeId, locale])
+}
+
+model Category {
+  id         String   @id @default(cuid())
+  menuTypeId String
+  sortOrder  Int      @default(0)
+  isActive   Boolean  @default(true)
+  imagePath  String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  menuType     MenuType              @relation(fields: [menuTypeId], references: [id], onDelete: Cascade)
+  translations CategoryTranslation[]
+  menuItems    MenuItem[]
+}
+
+model CategoryTranslation {
+  id          String   @id @default(cuid())
+  categoryId  String
+  locale      String   @db.VarChar(10)
+  name        String
+  description String?
+  category    Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@unique([categoryId, locale])
+}
+
+model MenuItem {
+  id             String   @id @default(cuid())
+  categoryId     String
+  price          Decimal  @db.Decimal(10, 2)
+  weightOrVolume String?  @db.VarChar(50)
+  sortOrder      Int      @default(0)
+  isActive       Boolean  @default(true)
+  imagePath      String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  category     Category              @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  translations MenuItemTranslation[]
+}
+
+model MenuItemTranslation {
+  id          String   @id @default(cuid())
+  menuItemId  String
+  locale      String   @db.VarChar(10)
+  name        String
+  description String?
+  menuItem    MenuItem @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
+
+  @@unique([menuItemId, locale])
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model SiteSettings {
+  id            String  @id @default(cuid())
+  siteName      String?
+  logoPath      String?
+  footerText    String? @db.Text
+  contactText   String? @db.Text
+}
