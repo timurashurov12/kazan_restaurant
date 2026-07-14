@@ -16,15 +16,15 @@ RUN npm run build
 FROM node:20-alpine
 WORKDIR /app
 
+COPY server/package.json ./
+RUN npm install --omit=dev
+
 COPY --from=builder /app/server/dist ./dist
 COPY --from=builder /app/server/prisma ./prisma
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
 COPY --from=builder /app/node_modules/.bin/prisma* ./node_modules/.bin/
 COPY --from=builder /app/node_modules/prisma ./node_modules/prisma
-
-COPY server/package.json ./
-RUN npm install --omit=dev --ignore-scripts
 
 COPY server/entrypoint.sh ./
 RUN chmod +x entrypoint.sh
