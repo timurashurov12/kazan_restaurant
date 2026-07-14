@@ -1,12 +1,11 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { Plus, Pencil, Trash2, Languages, ChevronLeft, ChevronRight, Search, ArrowUpDown, SlidersHorizontal, X } from 'lucide-react';
 import { API_BASE, headers, authFetch } from './api';
 import { translateMenuItem } from '@/lib/api';
 import { useTranslations } from '@/i18n';
-import { ImageUpload } from '@/components/ImageUpload';
-import { LanguageTabs } from '@/components/LanguageTabs';
 
 type MenuItemRow = {
   id: string;
@@ -20,7 +19,6 @@ type MenuItemRow = {
 };
 
 type Category = { id: string; translations: { locale: string; name: string }[] };
-type Language = { code: string; name: string };
 
 type PaginatedResponse = {
   items: MenuItemRow[];
@@ -32,6 +30,7 @@ type PaginatedResponse = {
 const PAGE_SIZE = 20;
 
 export function MenuItemsPage() {
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { t } = useTranslations();
   const [filterCategoryId, setFilterCategoryId] = useState<string>('');
@@ -40,8 +39,6 @@ export function MenuItemsPage() {
   const [sortBy, setSortBy] = useState<'sortOrder' | 'price'>('sortOrder');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const [page, setPage] = useState(0);
-  const [modal, setModal] = useState<'create' | null>(null);
-  const [editing, setEditing] = useState<MenuItemRow | null>(null);
   const [filterOpen, setFilterOpen] = useState(false);
 
   const { data: categoriesData } = useQuery({
@@ -53,15 +50,6 @@ export function MenuItemsPage() {
     },
   });
   const categories = categoriesData?.items ?? [];
-
-  const { data: languages = [] } = useQuery({
-    queryKey: ['admin', 'languages'],
-    queryFn: async (): Promise<Language[]> => {
-      const res = await authFetch(`${API_BASE}/languages`, { headers: headers() });
-      if (!res.ok) return [];
-      return res.json();
-    },
-  });
 
   const params = new URLSearchParams();
   if (filterCategoryId) params.set('categoryId', filterCategoryId);
@@ -116,7 +104,7 @@ export function MenuItemsPage() {
     <div className="space-y-6">
       <div className="flex justify-between items-center flex-wrap gap-4">
         <h1 className="text-2xl font-semibold text-stone-100">{t('admin.menuItems.title')}</h1>
-        <button onClick={() => setModal('create')} className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium" style={{ backgroundColor: 'var(--color-app-accent)', color: 'var(--color-app-bg)' }}>
+        <button onClick={() => navigate('/admin/menu-items/new')} className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium" style={{ backgroundColor: 'var(--color-app-accent)', color: 'var(--color-app-bg)' }}>
           <Plus className="w-4 h-4" /> {t('common.add')}
         </button>
       </div>
@@ -129,9 +117,7 @@ export function MenuItemsPage() {
           <SlidersHorizontal className="w-4 h-4" />
           {t('common.filter')}
           {filterCategoryId && (
-            <span className="px-1.5 py-0.5 text-xs rounded-full bg-[var(--color-app-accent)]/20 text-[var(--color-app-accent)]">
-              1
-            </span>
+            <span className="px-1.5 py-0.5 text-xs rounded-full bg-[var(--color-app-accent)]/20 text-[var(--color-app-accent)]">1</span>
           )}
         </button>
 
@@ -202,7 +188,7 @@ export function MenuItemsPage() {
                 <td className="px-4 py-3 text-right">
                   <div className="flex items-center justify-end gap-1">
                     <button onClick={() => translateMu.mutate(item.id)} disabled={translateMu.isPending} className="p-2 text-blue-400 hover:bg-blue-500/10 rounded-lg" title={t('common.translate')}><Languages className="w-4 h-4" /></button>
-                    <button onClick={() => setEditing(item)} className="p-2 text-[var(--color-app-accent)] hover:bg-[var(--color-app-accent)]/10 rounded-lg"><Pencil className="w-4 h-4" /></button>
+                    <button onClick={() => navigate(`/admin/menu-items/${item.id}/edit`)} className="p-2 text-[var(--color-app-accent)] hover:bg-[var(--color-app-accent)]/10 rounded-lg"><Pencil className="w-4 h-4" /></button>
                     <button onClick={() => { if (confirm(t('common.confirmDelete'))) deleteMu.mutate(item.id); }} className="p-2 text-red-400 hover:bg-red-500/10 rounded-lg"><Trash2 className="w-4 h-4" /></button>
                   </div>
                 </td>
@@ -241,9 +227,6 @@ export function MenuItemsPage() {
           </div>
         </div>
       )}
-
-      {modal === 'create' && <CreateModal categoryId={filterCategoryId || categories[0]?.id} languages={languages} onClose={() => setModal(null)} />}
-      {editing && <EditModal item={editing} languages={languages} onClose={() => setEditing(null)} />}
 
       {filterOpen && (
         <div className="fixed inset-0 z-50 flex justify-end" onClick={(e) => e.target === e.currentTarget && setFilterOpen(false)}>
@@ -288,152 +271,6 @@ export function MenuItemsPage() {
           </div>
         </div>
       )}
-    </div>
-  );
-}
-
-function CreateModal({ categoryId, languages, onClose }: { categoryId: string; languages: Language[]; onClose: () => void }) {
-  const queryClient = useQueryClient();
-  const { t } = useTranslations();
-  const [price, setPrice] = useState('');
-  const [weight, setWeight] = useState('');
-  const [sortOrder, setSortOrder] = useState(0);
-  const [imagePath, setImagePath] = useState<string | null>(null);
-  const [createdId, setCreatedId] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [translations, setTranslations] = useState<{ locale: string; name: string; description?: string | null }[]>([]);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    try {
-      const res = await authFetch(`${API_BASE}/admin/menu-items`, {
-        method: 'POST',
-        headers: headers(),
-        body: JSON.stringify({ categoryId, price: Number(price), weightOrVolume: weight || undefined, sortOrder, imagePath, translations }),
-      });
-      if (!res.ok) throw new Error('Failed');
-      const created = await res.json() as { id: string; imagePath?: string | null };
-      setCreatedId(created.id);
-      if (created.imagePath) setImagePath(created.imagePath);
-      queryClient.invalidateQueries({ queryKey: ['admin', 'menu-items'] });
-      toast.success(t('toast.created'));
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : t('errors.createFailed'));
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <Modal onClose={onClose}>
-      <h2 className="text-lg font-semibold text-stone-100">{t('admin.menuItems.newTitle')}</h2>
-      <form onSubmit={handleSubmit} className="space-y-4 mt-4">
-        {createdId && (
-          <ImageUpload
-            entityId={createdId}
-            entityType="menu-item"
-            currentPath={imagePath}
-            onUploaded={(path) => setImagePath(path)}
-          />
-        )}
-        <Field label={t('common.price')} value={price} onChange={setPrice} required />
-        <Field label={t('common.weight')} value={weight} onChange={setWeight} placeholder={t('admin.menuItems.weightPlaceholder')} />
-        <Field label={t('common.sort')} value={String(sortOrder)} onChange={(v) => setSortOrder(Number(v) || 0)} />
-        {languages.length > 0 && (
-          <LanguageTabs
-            languages={languages}
-            translations={translations}
-            onChange={setTranslations}
-            showDescription
-            nameLabel={t('common.name')}
-            descriptionLabel={t('admin.menuItems.descriptionRu')}
-          />
-        )}
-        <div className="flex gap-2 justify-end">
-          <button type="button" onClick={onClose} className="px-4 py-2 rounded-lg text-sm text-stone-400">{t('common.cancel')}</button>
-          <button type="submit" disabled={loading} className="px-4 py-2 rounded-lg text-sm font-medium" style={{ backgroundColor: 'var(--color-app-accent)', color: 'var(--color-app-bg)' }}>{t('common.create')}</button>
-        </div>
-      </form>
-    </Modal>
-  );
-}
-
-function EditModal({ item, languages, onClose }: { item: MenuItemRow; languages: Language[]; onClose: () => void }) {
-  const queryClient = useQueryClient();
-  const { t } = useTranslations();
-  const [price, setPrice] = useState(String(item.price));
-  const [weight, setWeight] = useState(item.weightOrVolume || '');
-  const [sortOrder, setSortOrder] = useState(item.sortOrder);
-  const [translations, setTranslations] = useState(item.translations.map((tr) => ({ ...tr })));
-  const [imagePath, setImagePath] = useState(item.imagePath || null);
-  const [loading, setLoading] = useState(false);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    try {
-      const res = await authFetch(`${API_BASE}/admin/menu-items/${item.id}`, {
-        method: 'PUT',
-        headers: headers(),
-        body: JSON.stringify({ price: Number(price), weightOrVolume: weight || null, sortOrder, imagePath, translations }),
-      });
-      if (!res.ok) throw new Error('Failed');
-      queryClient.invalidateQueries({ queryKey: ['admin', 'menu-items'] });
-      toast.success(t('toast.updated'));
-      onClose();
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : t('errors.updateFailed'));
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <Modal onClose={onClose}>
-      <h2 className="text-lg font-semibold text-stone-100">{t('admin.menuItems.editTitle')}</h2>
-      <form onSubmit={handleSubmit} className="space-y-4 mt-4">
-        <ImageUpload
-          entityId={item.id}
-          entityType="menu-item"
-          currentPath={imagePath}
-          onUploaded={(path) => setImagePath(path)}
-        />
-        <Field label={t('common.price')} value={price} onChange={setPrice} required />
-        <Field label={t('common.weight')} value={weight} onChange={setWeight} />
-        <Field label={t('common.sort')} value={String(sortOrder)} onChange={(v) => setSortOrder(Number(v) || 0)} />
-        {languages.length > 0 && (
-          <LanguageTabs
-            languages={languages}
-            translations={translations}
-            onChange={setTranslations}
-            showDescription
-            nameLabel={t('common.name')}
-            descriptionLabel={t('admin.menuItems.descriptionRu')}
-          />
-        )}
-        <div className="flex gap-2 justify-end">
-          <button type="button" onClick={onClose} className="px-4 py-2 rounded-lg text-sm text-stone-400">{t('common.cancel')}</button>
-          <button type="submit" disabled={loading} className="px-4 py-2 rounded-lg text-sm font-medium" style={{ backgroundColor: 'var(--color-app-accent)', color: 'var(--color-app-bg)' }}>{t('common.save')}</button>
-        </div>
-      </form>
-    </Modal>
-  );
-}
-
-function Modal({ children, onClose }: { children: React.ReactNode; onClose: () => void }) {
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={(e) => e.target === e.currentTarget && onClose()}>
-      <div className="w-full max-w-md max-h-[90vh] overflow-y-auto p-6 rounded-2xl border border-[var(--color-border)] bg-[var(--color-app-panel)]">{children}</div>
-    </div>
-  );
-}
-
-function Field({ label, value, onChange, required, placeholder }: { label: string; value: string; onChange: (v: string) => void; required?: boolean; placeholder?: string }) {
-  return (
-    <div>
-      <label className="block text-sm font-medium text-stone-400 mb-1">{label}</label>
-      <input value={value} onChange={(e) => onChange(e.target.value)} required={required} placeholder={placeholder} className="w-full px-4 py-2 rounded-lg bg-[var(--color-app-bg)] border border-[var(--color-border)] text-stone-100 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-app-accent)]/40" />
     </div>
   );
 }

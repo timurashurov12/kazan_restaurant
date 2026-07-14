@@ -39,7 +39,7 @@ export class MenuItemsService {
         orderBy,
         skip,
         take,
-        include: { translations: true, category: true },
+        include: { translations: true, category: { include: { translations: true } } },
       }),
       this.prisma.menuItem.count({ where }),
     ]);
@@ -50,7 +50,7 @@ export class MenuItemsService {
   async findOne(id: string) {
     const item = await this.prisma.menuItem.findUnique({
       where: { id },
-      include: { translations: true, category: true },
+      include: { translations: true, category: { include: { translations: true } } },
     });
     if (!item) throw new NotFoundException('Menu item not found');
     return item;
@@ -86,6 +86,7 @@ export class MenuItemsService {
   async update(
     id: string,
     data: {
+      categoryId?: string;
       price?: number;
       weightOrVolume?: string;
       sortOrder?: number;
@@ -118,6 +119,7 @@ export class MenuItemsService {
     const updated = await this.prisma.menuItem.update({
       where: { id },
       data: {
+        categoryId: data.categoryId,
         price: data.price,
         weightOrVolume: data.weightOrVolume,
         sortOrder: data.sortOrder,

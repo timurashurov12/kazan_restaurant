@@ -85,6 +85,7 @@ export class MenuItemsController {
     @Param('id') id: string,
     @Body()
     body: {
+      categoryId?: string;
       price?: number;
       weightOrVolume?: string;
       sortOrder?: number;

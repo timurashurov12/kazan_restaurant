@@ -10,6 +10,7 @@ import { AdminLayout } from '@/pages/admin/AdminLayout';
 import { MenuTypesPage } from '@/pages/admin/MenuTypesPage';
 import { CategoriesPage as AdminCategoriesPage } from '@/pages/admin/CategoriesPage';
 import { MenuItemsPage } from '@/pages/admin/MenuItemsPage';
+import { MenuItemFormPage } from '@/pages/admin/MenuItemFormPage';
 import { LanguagesPage } from '@/pages/admin/LanguagesPage';
 import { SettingsPage } from '@/pages/admin/SettingsPage';
 
@@ -28,6 +29,8 @@ export default function App() {
           <Route path="menu-types" element={<MenuTypesPage />} />
           <Route path="categories" element={<AdminCategoriesPage />} />
           <Route path="menu-items" element={<MenuItemsPage />} />
+          <Route path="menu-items/new" element={<MenuItemFormPage />} />
+          <Route path="menu-items/:id/edit" element={<MenuItemFormPage />} />
           <Route path="languages" element={<LanguagesPage />} />
           <Route path="settings" element={<SettingsPage />} />
         </Route>
