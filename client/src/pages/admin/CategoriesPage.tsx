@@ -37,14 +37,15 @@ export function CategoriesPage() {
   const [modal, setModal] = useState<'create' | null>(null);
   const [editing, setEditing] = useState<CategoryRow | null>(null);
 
-  const { data: menuTypes = [] } = useQuery({
+  const { data: menuTypesData } = useQuery({
     queryKey: ['admin', 'menu-types'],
-    queryFn: async (): Promise<MenuType[]> => {
-      const res = await fetch(`${API_BASE}/admin/menu-types`, { headers: headers() });
-      if (!res.ok) return [];
-      return res.json();
+    queryFn: async () => {
+      const res = await fetch(`${API_BASE}/admin/menu-types?take=9999`, { headers: headers() });
+      if (!res.ok) return { items: [] as MenuType[] };
+      return res.json() as Promise<{ items: MenuType[] }>;
     },
   });
+  const menuTypes = menuTypesData?.items ?? [];
 
   const params = new URLSearchParams();
   if (filterMenuTypeId) params.set('menuTypeId', filterMenuTypeId);

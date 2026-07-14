@@ -40,14 +40,15 @@ export function MenuItemsPage() {
   const [modal, setModal] = useState<'create' | null>(null);
   const [editing, setEditing] = useState<MenuItemRow | null>(null);
 
-  const { data: categories = [] } = useQuery({
+  const { data: categoriesData } = useQuery({
     queryKey: ['admin', 'categories'],
-    queryFn: async (): Promise<Category[]> => {
-      const res = await fetch(`${API_BASE}/admin/categories`, { headers: headers() });
-      if (!res.ok) return [];
-      return res.json();
+    queryFn: async () => {
+      const res = await fetch(`${API_BASE}/admin/categories?take=9999`, { headers: headers() });
+      if (!res.ok) return { items: [] as Category[] };
+      return res.json() as Promise<{ items: Category[] }>;
     },
   });
+  const categories = categoriesData?.items ?? [];
 
   const params = new URLSearchParams();
   if (filterCategoryId) params.set('categoryId', filterCategoryId);
