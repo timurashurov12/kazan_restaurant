@@ -18,9 +18,9 @@ WORKDIR /app
 
 COPY --from=builder /app/server/dist ./dist
 COPY --from=builder /app/server/prisma ./prisma
-COPY --from=builder /app/server/node_modules/.prisma ./node_modules/.prisma
-COPY --from=builder /app/server/node_modules/@prisma ./node_modules/@prisma
-COPY --from=builder /app/node_modules/.bin/prisma ./node_modules/.bin/prisma
+COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
+COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
+COPY --from=builder /app/node_modules/.bin/prisma* ./node_modules/.bin/
 COPY --from=builder /app/node_modules/prisma ./node_modules/prisma
 
 COPY server/package.json ./

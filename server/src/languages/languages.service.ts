@@ -1,66 +1,22 @@
 import { Injectable, Logger, BadRequestException } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../common/prisma/prisma.service';
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { AiService } from '../common/ai/ai.service';
 import * as fs from 'fs';
 import * as path from 'path';
-
-const LOCALE_NAMES: Record<string, string> = {
-  ru: 'Russian',
-  en: 'English',
-  kk: 'Kazakh',
-  uz: 'Uzbek',
-  tr: 'Turkish',
-  de: 'German',
-  fr: 'French',
-  es: 'Spanish',
-  zh: 'Chinese',
-  ja: 'Japanese',
-  ko: 'Korean',
-  ar: 'Arabic',
-};
 
 @Injectable()
 export class LanguagesService {
   private readonly logger = new Logger(LanguagesService.name);
-  private genAI: GoogleGenerativeAI | null = null;
 
   constructor(
     private prisma: PrismaService,
-    private config: ConfigService,
+    private ai: AiService,
   ) {}
-
-  private getGenAI(): GoogleGenerativeAI {
-    if (this.genAI) return this.genAI;
-    const key = this.config.get<string>('GEMINI_API_KEY')?.trim();
-    if (!key) {
-      throw new BadRequestException(
-        'Translation unavailable: set GEMINI_API_KEY in .env',
-      );
-    }
-    this.genAI = new GoogleGenerativeAI(key);
-    return this.genAI;
-  }
 
   private async translateText(text: string, sourceLocale: string, targetLocale: string): Promise<string> {
     if (!text?.trim()) return '';
-    const genAI = this.getGenAI();
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
-    const sourceLang = LOCALE_NAMES[sourceLocale] || sourceLocale;
-    const targetLang = LOCALE_NAMES[targetLocale] || targetLocale;
-
-    const prompt = `You are a restaurant menu translator. Translate the following text from ${sourceLang} to ${targetLang}.
-Keep the tone neutral and suitable for a menu. For dish names use established equivalents where they exist, otherwise transliterate.
-Return ONLY the translation, no explanations.
-
-Text to translate:
-${text}`;
-
     try {
-      const result = await model.generateContent({
-        contents: [{ role: 'user', parts: [{ text: prompt }] }],
-      });
-      return result.response.text()?.trim() ?? '';
+      return await this.ai.translate(text, sourceLocale, targetLocale);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
       this.logger.error(`Translation error: ${msg}`);
@@ -128,7 +84,6 @@ ${text}`;
     }
 
     const sourceContent = JSON.parse(fs.readFileSync(sourcePath, 'utf-8'));
-    const targetContent = JSON.parse(fs.readFileSync(targetPath, 'utf-8'));
 
     const translated = await this.translateObject(sourceContent, sourceLocale, code);
 

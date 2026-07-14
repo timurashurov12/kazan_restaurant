@@ -1,0 +1,52 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: kazan-postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: kazan
+      POSTGRES_PASSWORD: kazan
+      POSTGRES_DB: kazan
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U kazan"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  server:
+    image: node:20-alpine
+    container_name: kazan-server-dev
+    working_dir: /app
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env.dev
+    volumes:
+      - ./server:/app
+      - /app/node_modules
+    command: sh -c "npm install && npx prisma generate && npx prisma migrate dev --name init && npm run dev"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  client:
+    image: node:20-alpine
+    container_name: kazan-client-dev
+    working_dir: /app
+    ports:
+      - "5173:5173"
+    environment:
+      VITE_API_URL: http://localhost:3000
+    volumes:
+      - ./client:/app
+      - /app/node_modules
+    command: sh -c "npm install && npm run dev -- --host"
+    depends_on:
+      - server
+
+volumes:
+  pgdata:

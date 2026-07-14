@@ -1,71 +1,14 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../common/prisma/prisma.service';
+import { AiService } from '../common/ai/ai.service';
 import { invalidateMenuCache } from '../public-menu/public-menu.service';
-import { GoogleGenerativeAI } from '@google/generative-ai';
-
-const LOCALE_NAMES: Record<string, string> = {
-  ru: 'Russian',
-  en: 'English',
-};
 
 @Injectable()
 export class TranslateService {
-  private genAI: GoogleGenerativeAI | null = null;
-
   constructor(
-    private config: ConfigService,
     private prisma: PrismaService,
+    private ai: AiService,
   ) {}
-
-  private getGenAI(): GoogleGenerativeAI {
-    if (this.genAI) return this.genAI;
-    const key = this.config.get<string>('GEMINI_API_KEY')?.trim();
-    if (!key) {
-      throw new BadRequestException(
-        'Translation unavailable: set GEMINI_API_KEY in .env',
-      );
-    }
-    this.genAI = new GoogleGenerativeAI(key);
-    return this.genAI;
-  }
-
-  private buildTranslatePrompt(
-    sourceLang: string,
-    targetLang: string,
-    text: string,
-  ): string {
-    return `You are a restaurant menu translator. Translate the following text from ${sourceLang} to ${targetLang}. 
-Keep the tone neutral and suitable for a menu. For dish names use established equivalents where they exist, otherwise transliterate.
-Return ONLY the translation, no explanations.
-
-Text to translate:
-${text}`;
-  }
-
-  async translate(
-    text: string,
-    sourceLocale: string,
-    targetLocale: string,
-  ): Promise<string> {
-    if (!text?.trim()) return '';
-
-    const genAI = this.getGenAI();
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
-    const sourceLang = LOCALE_NAMES[sourceLocale] || sourceLocale;
-    const targetLang = LOCALE_NAMES[targetLocale] || targetLocale;
-    const prompt = this.buildTranslatePrompt(sourceLang, targetLang, text);
-
-    try {
-      const result = await model.generateContent({
-        contents: [{ role: 'user', parts: [{ text: prompt }] }],
-      });
-      return result.response.text()?.trim() ?? '';
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : String(err);
-      throw new BadRequestException(`Translation error: ${msg}`);
-    }
-  }
 
   async translateMenuType(
     menuTypeId: string,
@@ -96,7 +39,7 @@ ${text}`;
 
     const translatedLocales: string[] = [];
     for (const lang of targetLangs) {
-      const name = await this.translate(sourceName, sourceLocale, lang.code);
+      const name = await this.ai.translate(sourceName, sourceLocale, lang.code);
       await this.prisma.menuTypeTranslation.create({
         data: { menuTypeId, locale: lang.code, name },
       });
@@ -136,9 +79,9 @@ ${text}`;
 
     const translatedLocales: string[] = [];
     for (const lang of targetLangs) {
-      const name = await this.translate(sourceName, sourceLocale, lang.code);
+      const name = await this.ai.translate(sourceName, sourceLocale, lang.code);
       const description = sourceDesc
-        ? await this.translate(sourceDesc, sourceLocale, lang.code)
+        ? await this.ai.translate(sourceDesc, sourceLocale, lang.code)
         : null;
       await this.prisma.categoryTranslation.create({
         data: { categoryId, locale: lang.code, name, description },
@@ -182,9 +125,9 @@ ${text}`;
 
     const translatedLocales: string[] = [];
     for (const lang of targetLangs) {
-      const name = await this.translate(sourceName, sourceLocale, lang.code);
+      const name = await this.ai.translate(sourceName, sourceLocale, lang.code);
       const description = sourceDesc
-        ? await this.translate(sourceDesc, sourceLocale, lang.code)
+        ? await this.ai.translate(sourceDesc, sourceLocale, lang.code)
         : null;
       await this.prisma.menuItemTranslation.create({
         data: { menuItemId, locale: lang.code, name, description },
