@@ -17,14 +17,11 @@ FROM node:20-alpine
 WORKDIR /app
 
 COPY server/package.json ./
-RUN npm install --omit=dev
+RUN npm install --omit=dev && npm install prisma --no-save
 
 COPY --from=builder /app/server/dist ./dist
 COPY --from=builder /app/server/prisma ./prisma
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
-COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
-COPY --from=builder /app/node_modules/.bin/prisma* ./node_modules/.bin/
-COPY --from=builder /app/node_modules/prisma ./node_modules/prisma
 
 COPY server/entrypoint.sh ./
 RUN chmod +x entrypoint.sh
