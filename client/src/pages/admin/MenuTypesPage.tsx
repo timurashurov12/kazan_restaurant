@@ -6,6 +6,7 @@ import { API_BASE, headers } from './api';
 import { translateMenuType } from '@/lib/api';
 import { useTranslations } from '@/i18n';
 import { ImageUpload } from '@/components/ImageUpload';
+import { LanguageTabs } from '@/components/LanguageTabs';
 
 type MenuTypeRow = {
   id: string;
@@ -15,6 +16,8 @@ type MenuTypeRow = {
   sortOrder: number;
   translations: { locale: string; name: string }[];
 };
+
+type Language = { code: string; name: string };
 
 type PaginatedResponse = {
   items: MenuTypeRow[];
@@ -53,6 +56,15 @@ export function MenuTypesPage() {
   const list = data?.items ?? [];
   const total = data?.total ?? 0;
   const totalPages = Math.ceil(total / PAGE_SIZE);
+
+  const { data: languages = [] } = useQuery({
+    queryKey: ['admin', 'languages'],
+    queryFn: async (): Promise<Language[]> => {
+      const res = await fetch(`${API_BASE}/languages`, { headers: headers() });
+      if (!res.ok) return [];
+      return res.json();
+    },
+  });
 
   const deleteMu = useMutation({
     mutationFn: async (id: string) => {
@@ -187,28 +199,25 @@ export function MenuTypesPage() {
         </div>
       )}
 
-      {modal === 'create' && <CreateModal onClose={() => setModal(null)} />}
-      {editing && <EditModal item={editing} onClose={() => setEditing(null)} />}
+      {modal === 'create' && <CreateModal languages={languages} onClose={() => setModal(null)} />}
+      {editing && <EditModal item={editing} languages={languages} onClose={() => setEditing(null)} />}
     </div>
   );
 }
 
-function CreateModal({ onClose }: { onClose: () => void }) {
+function CreateModal({ languages, onClose }: { languages: Language[]; onClose: () => void }) {
   const queryClient = useQueryClient();
   const { t } = useTranslations();
   const [code, setCode] = useState('');
-  const [nameRu, setNameRu] = useState('');
-  const [nameEn, setNameEn] = useState('');
   const [imagePath, setImagePath] = useState<string | null>(null);
   const [createdId, setCreatedId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [translations, setTranslations] = useState<{ locale: string; name: string; description?: string | null }[]>([]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     try {
-      const translations = [{ locale: 'ru', name: nameRu }];
-      if (nameEn.trim()) translations.push({ locale: 'en', name: nameEn });
       const res = await fetch(`${API_BASE}/admin/menu-types`, {
         method: 'POST',
         headers: headers(),
@@ -245,8 +254,14 @@ function CreateModal({ onClose }: { onClose: () => void }) {
           />
         )}
         <Field label={t('common.code')} value={code} onChange={setCode} placeholder={t('admin.menuTypes.codePlaceholder')} />
-        <Field label={t('admin.menuItems.nameRu')} value={nameRu} onChange={setNameRu} placeholder={t('home.mainMenu')} required />
-        <Field label={t('admin.menuItems.nameEn')} value={nameEn} onChange={setNameEn} placeholder={t('home.mainMenu')} />
+        {languages.length > 0 && (
+          <LanguageTabs
+            languages={languages}
+            translations={translations}
+            onChange={setTranslations}
+            nameLabel={t('common.name')}
+          />
+        )}
         <div className="flex gap-2 justify-end">
           <button type="button" onClick={onClose} className="px-4 py-2 rounded-lg text-sm text-stone-400">{t('common.cancel')}</button>
           <button type="submit" disabled={loading} className="px-4 py-2 rounded-lg text-sm font-medium" style={{ backgroundColor: 'var(--color-app-accent)', color: 'var(--color-app-bg)' }}>{t('common.create')}</button>
@@ -256,7 +271,7 @@ function CreateModal({ onClose }: { onClose: () => void }) {
   );
 }
 
-function EditModal({ item, onClose }: { item: MenuTypeRow; onClose: () => void }) {
+function EditModal({ item, languages, onClose }: { item: MenuTypeRow; languages: Language[]; onClose: () => void }) {
   const queryClient = useQueryClient();
   const { t } = useTranslations();
   const [code, setCode] = useState(item.code);
@@ -295,9 +310,14 @@ function EditModal({ item, onClose }: { item: MenuTypeRow; onClose: () => void }
           onUploaded={(path) => setImagePath(path)}
         />
         <Field label={t('common.code')} value={code} onChange={setCode} />
-        {translations.map((tr, i) => (
-          <Field key={tr.locale} label={`${t('common.name')} (${tr.locale.toUpperCase()})`} value={tr.name} onChange={(v) => setTranslations((prev) => prev.map((x, j) => j === i ? { ...x, name: v } : x))} />
-        ))}
+        {languages.length > 0 && (
+          <LanguageTabs
+            languages={languages}
+            translations={translations}
+            onChange={setTranslations}
+            nameLabel={t('common.name')}
+          />
+        )}
         <div className="flex gap-2 justify-end">
           <button type="button" onClick={onClose} className="px-4 py-2 rounded-lg text-sm text-stone-400">{t('common.cancel')}</button>
           <button type="submit" disabled={loading} className="px-4 py-2 rounded-lg text-sm font-medium" style={{ backgroundColor: 'var(--color-app-accent)', color: 'var(--color-app-bg)' }}>{t('common.save')}</button>

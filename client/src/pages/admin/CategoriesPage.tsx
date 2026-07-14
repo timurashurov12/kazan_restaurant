@@ -6,6 +6,7 @@ import { API_BASE, headers } from './api';
 import { translateCategory } from '@/lib/api';
 import { useTranslations } from '@/i18n';
 import { ImageUpload } from '@/components/ImageUpload';
+import { LanguageTabs } from '@/components/LanguageTabs';
 
 type CategoryRow = {
   id: string;
@@ -16,6 +17,7 @@ type CategoryRow = {
 };
 
 type MenuType = { id: string; code: string; translations: { locale: string; name: string }[] };
+type Language = { code: string; name: string };
 
 type PaginatedResponse = {
   items: CategoryRow[];
@@ -46,6 +48,15 @@ export function CategoriesPage() {
     },
   });
   const menuTypes = menuTypesData?.items ?? [];
+
+  const { data: languages = [] } = useQuery({
+    queryKey: ['admin', 'languages'],
+    queryFn: async (): Promise<Language[]> => {
+      const res = await fetch(`${API_BASE}/languages`, { headers: headers() });
+      if (!res.ok) return [];
+      return res.json();
+    },
+  });
 
   const params = new URLSearchParams();
   if (filterMenuTypeId) params.set('menuTypeId', filterMenuTypeId);
@@ -209,28 +220,25 @@ export function CategoriesPage() {
         </div>
       )}
 
-      {modal === 'create' && <CreateModal menuTypeId={filterMenuTypeId || menuTypes[0]?.id} onClose={() => setModal(null)} />}
-      {editing && <EditModal item={editing} onClose={() => setEditing(null)} />}
+      {modal === 'create' && <CreateModal menuTypeId={filterMenuTypeId || menuTypes[0]?.id} languages={languages} onClose={() => setModal(null)} />}
+      {editing && <EditModal item={editing} languages={languages} onClose={() => setEditing(null)} />}
     </div>
   );
 }
 
-function CreateModal({ menuTypeId, onClose }: { menuTypeId: string; onClose: () => void }) {
+function CreateModal({ menuTypeId, languages, onClose }: { menuTypeId: string; languages: Language[]; onClose: () => void }) {
   const queryClient = useQueryClient();
   const { t } = useTranslations();
-  const [nameRu, setNameRu] = useState('');
-  const [nameEn, setNameEn] = useState('');
   const [sortOrder, setSortOrder] = useState(0);
   const [imagePath, setImagePath] = useState<string | null>(null);
   const [createdId, setCreatedId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [translations, setTranslations] = useState<{ locale: string; name: string; description?: string | null }[]>([]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     try {
-      const translations = [{ locale: 'ru', name: nameRu }];
-      if (nameEn.trim()) translations.push({ locale: 'en', name: nameEn });
       const res = await fetch(`${API_BASE}/admin/categories`, {
         method: 'POST',
         headers: headers(),
@@ -261,9 +269,15 @@ function CreateModal({ menuTypeId, onClose }: { menuTypeId: string; onClose: () 
             onUploaded={(path) => setImagePath(path)}
           />
         )}
-        <Field label={t('admin.menuItems.nameRu')} value={nameRu} onChange={setNameRu} required />
-        <Field label={t('admin.menuItems.nameEn')} value={nameEn} onChange={setNameEn} />
         <Field label={t('common.sort')} value={String(sortOrder)} onChange={(v) => setSortOrder(Number(v) || 0)} />
+        {languages.length > 0 && (
+          <LanguageTabs
+            languages={languages}
+            translations={translations}
+            onChange={setTranslations}
+            nameLabel={t('common.name')}
+          />
+        )}
         <div className="flex gap-2 justify-end">
           <button type="button" onClick={onClose} className="px-4 py-2 rounded-lg text-sm text-stone-400">{t('common.cancel')}</button>
           <button type="submit" disabled={loading} className="px-4 py-2 rounded-lg text-sm font-medium" style={{ backgroundColor: 'var(--color-app-accent)', color: 'var(--color-app-bg)' }}>{t('common.create')}</button>
@@ -273,7 +287,7 @@ function CreateModal({ menuTypeId, onClose }: { menuTypeId: string; onClose: () 
   );
 }
 
-function EditModal({ item, onClose }: { item: CategoryRow; onClose: () => void }) {
+function EditModal({ item, languages, onClose }: { item: CategoryRow; languages: Language[]; onClose: () => void }) {
   const queryClient = useQueryClient();
   const { t } = useTranslations();
   const [sortOrder, setSortOrder] = useState(item.sortOrder);
@@ -312,9 +326,14 @@ function EditModal({ item, onClose }: { item: CategoryRow; onClose: () => void }
           onUploaded={(path) => setImagePath(path)}
         />
         <Field label={t('common.sort')} value={String(sortOrder)} onChange={(v) => setSortOrder(Number(v) || 0)} />
-        {translations.map((tr, i) => (
-          <Field key={tr.locale} label={`${t('common.name')} (${tr.locale.toUpperCase()})`} value={tr.name} onChange={(v) => setTranslations((prev) => prev.map((x, j) => j === i ? { ...x, name: v } : x))} />
-        ))}
+        {languages.length > 0 && (
+          <LanguageTabs
+            languages={languages}
+            translations={translations}
+            onChange={setTranslations}
+            nameLabel={t('common.name')}
+          />
+        )}
         <div className="flex gap-2 justify-end">
           <button type="button" onClick={onClose} className="px-4 py-2 rounded-lg text-sm text-stone-400">{t('common.cancel')}</button>
           <button type="submit" disabled={loading} className="px-4 py-2 rounded-lg text-sm font-medium" style={{ backgroundColor: 'var(--color-app-accent)', color: 'var(--color-app-bg)' }}>{t('common.save')}</button>
