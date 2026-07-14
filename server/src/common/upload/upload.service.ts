@@ -3,13 +3,8 @@ import { existsSync, mkdirSync } from 'fs';
 import { join } from 'path';
 import * as crypto from 'crypto';
 
-let sharp: typeof import('sharp') | null = null;
-
-try {
-  sharp = require('sharp');
-} catch {
-  // sharp not available
-}
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const sharpModule = (() => { try { return require('sharp'); } catch { return null; } })() as ((input: Buffer) => ReturnType<typeof import('sharp')['default']>) | null;
 
 @Injectable()
 export class UploadService {
@@ -21,7 +16,7 @@ export class UploadService {
     if (!existsSync(this.uploadsDir)) {
       mkdirSync(this.uploadsDir, { recursive: true });
     }
-    if (sharp) {
+    if (sharpModule) {
       this.logger.log('sharp loaded — images will be compressed to webp');
     } else {
       this.logger.warn('sharp not available — images saved in original format');
@@ -29,11 +24,11 @@ export class UploadService {
   }
 
   async saveFile(file: Express.Multer.File): Promise<string> {
-    if (sharp) {
+    if (sharpModule) {
       const filename = `${crypto.randomUUID()}.webp`;
       const filepath = join(this.uploadsDir, filename);
       try {
-        await sharp(file.buffer)
+        await sharpModule(file.buffer)
           .resize(1200, 1200, { fit: 'inside', withoutEnlargement: true })
           .webp({ quality: 80 })
           .toFile(filepath);
