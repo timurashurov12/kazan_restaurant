@@ -1,4 +1,4 @@
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+const API_BASE = import.meta.env.VITE_API_URL ?? '';
 
 export function publicUploadUrl(imagePath: string | null | undefined): string | null {
   if (!imagePath) return null;
