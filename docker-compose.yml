@@ -1,16 +1,20 @@
 services:
-  postgres:
-    image: postgres:16-alpine
-    container_name: kazan-postgres
+  server:
+    build:
+      context: .
+      dockerfile: server/Dockerfile
+    restart: unless-stopped
+    expose:
+      - "3000"
+    environment:
+      API_PORT: "3000"
+
+  client:
+    build:
+      context: .
+      dockerfile: client/Dockerfile
     restart: unless-stopped
     ports:
-      - "5433:5432"
-    environment:
-      POSTGRES_USER: kazan
-      POSTGRES_PASSWORD: kazan
-      POSTGRES_DB: kazan
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-
-volumes:
-  pgdata:
+      - "80:80"
+    depends_on:
+      - server
