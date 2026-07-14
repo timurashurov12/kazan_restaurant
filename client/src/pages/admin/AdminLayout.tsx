@@ -1,5 +1,5 @@
 import { Outlet, Navigate, Link, useLocation } from 'react-router-dom';
-import { UtensilsCrossed, LogOut, LayoutGrid, List, Package, Globe, Settings } from 'lucide-react';
+import { LogOut, LayoutGrid, List, Package, Globe, Settings } from 'lucide-react';
 import { I18nProvider, useTranslations } from '@/i18n';
 
 function getToken(): string | null {
@@ -31,8 +31,8 @@ function AdminLayoutInner() {
       <aside className="w-56 shrink-0 border-r border-[var(--color-border)] bg-[var(--color-app-panel)] hidden md:flex flex-col">
         <div className="px-4 py-4 border-b border-[var(--color-border)]">
           <Link to="/admin" className="flex items-center gap-2 text-stone-100 font-semibold">
-            <UtensilsCrossed className="h-5 w-5 text-[var(--color-app-accent)]" />
-            Kazan Admin
+            <img src="/logo.svg" alt="Kazan" className="h-6 w-auto" />
+            <span className="text-sm">Admin</span>
           </Link>
         </div>
         <nav className="flex-1 p-2 space-y-1">

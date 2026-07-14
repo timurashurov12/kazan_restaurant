@@ -42,6 +42,7 @@ function LoginPageInner() {
   return (
     <div className="min-h-screen flex items-center justify-center p-4" style={{ backgroundColor: 'var(--color-app-bg)' }}>
       <form onSubmit={handleSubmit} className="w-full max-w-sm space-y-4 p-6 rounded-2xl border border-[var(--color-border)] bg-[var(--color-app-panel)]">
+        <img src="/logo.svg" alt="Kazan" className="mx-auto h-12 w-auto" />
         <h1 className="text-xl font-semibold text-stone-100 text-center">{t('admin.login.title')}</h1>
         <input
           type="email"

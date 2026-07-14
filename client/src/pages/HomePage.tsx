@@ -40,6 +40,7 @@ export function HomePage() {
               {locale === 'ru' ? 'RU' : 'EN'}
             </button>
           </div>
+          <img src="/logo.svg" alt="Kazan" className="mx-auto h-16 w-auto mb-4" />
           {siteLabel ? (
             <p className="mb-2 text-xs font-medium uppercase tracking-[0.22em] text-[var(--color-app-accent)]">
               {siteLabel}
