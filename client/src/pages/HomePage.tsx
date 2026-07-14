@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useLocale } from '@/context/LocaleContext';
 import { useTranslations } from '@/i18n';
-import { fetchMenuTypes, fetchSiteSettings, publicUploadUrl } from '@/lib/api';
+import { fetchMenuTypes, publicUploadUrl } from '@/lib/api';
 import { UtensilsCrossed, ChevronRight, Globe } from 'lucide-react';
 
 export function HomePage() {
@@ -12,12 +12,6 @@ export function HomePage() {
     queryKey: ['menu-types', locale],
     queryFn: () => fetchMenuTypes(locale),
   });
-  const { data: siteSettings } = useQuery({
-    queryKey: ['site-settings'],
-    queryFn: fetchSiteSettings,
-  });
-
-  const siteLabel = siteSettings?.siteName?.trim() || null;
 
   if (isLoading) {
     return (
@@ -41,15 +35,6 @@ export function HomePage() {
             </button>
           </div>
           <img src="/logo.svg" alt="Kazan" className="mx-auto h-16 w-auto mb-4" />
-          {siteLabel ? (
-            <p className="mb-2 text-xs font-medium uppercase tracking-[0.22em] text-[var(--color-app-accent)]">
-              {siteLabel}
-            </p>
-          ) : (
-            <p className="mb-2 text-xs font-medium uppercase tracking-[0.22em] text-stone-500">
-              {t('home.restaurantName')}
-            </p>
-          )}
           <h1 className="text-2xl font-semibold leading-tight text-stone-50">
             {t('home.title')}
           </h1>
