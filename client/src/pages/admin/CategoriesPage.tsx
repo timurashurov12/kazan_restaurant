@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { Plus, Pencil, Trash2, Languages } from 'lucide-react';
+import { Plus, Pencil, Trash2, Languages, ChevronLeft, ChevronRight, Search, ArrowUpDown } from 'lucide-react';
 import { API_BASE, headers } from './api';
 import { translateCategory } from '@/lib/api';
 import { useTranslations } from '@/i18n';
@@ -17,10 +17,23 @@ type CategoryRow = {
 
 type MenuType = { id: string; code: string; translations: { locale: string; name: string }[] };
 
+type PaginatedResponse = {
+  items: CategoryRow[];
+  total: number;
+  skip: number;
+  take: number;
+};
+
+const PAGE_SIZE = 20;
+
 export function CategoriesPage() {
   const queryClient = useQueryClient();
   const { t } = useTranslations();
   const [filterMenuTypeId, setFilterMenuTypeId] = useState<string>('');
+  const [search, setSearch] = useState('');
+  const [searchInput, setSearchInput] = useState('');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+  const [page, setPage] = useState(0);
   const [modal, setModal] = useState<'create' | null>(null);
   const [editing, setEditing] = useState<CategoryRow | null>(null);
 
@@ -33,17 +46,25 @@ export function CategoriesPage() {
     },
   });
 
-  const { data: list = [] } = useQuery({
-    queryKey: ['admin', 'categories', filterMenuTypeId],
-    queryFn: async (): Promise<CategoryRow[]> => {
-      const url = filterMenuTypeId
-        ? `${API_BASE}/admin/categories?menuTypeId=${filterMenuTypeId}`
-        : `${API_BASE}/admin/categories`;
-      const res = await fetch(url, { headers: headers() });
-      if (!res.ok) return [];
+  const params = new URLSearchParams();
+  if (filterMenuTypeId) params.set('menuTypeId', filterMenuTypeId);
+  if (search) params.set('search', search);
+  params.set('sortOrder', sortOrder);
+  params.set('skip', String(page * PAGE_SIZE));
+  params.set('take', String(PAGE_SIZE));
+
+  const { data, isLoading } = useQuery({
+    queryKey: ['admin', 'categories', filterMenuTypeId, search, sortOrder, page],
+    queryFn: async (): Promise<PaginatedResponse> => {
+      const res = await fetch(`${API_BASE}/admin/categories?${params}`, { headers: headers() });
+      if (!res.ok) return { items: [], total: 0, skip: 0, take: PAGE_SIZE };
       return res.json();
     },
   });
+
+  const list = data?.items ?? [];
+  const total = data?.total ?? 0;
+  const totalPages = Math.ceil(total / PAGE_SIZE);
 
   const deleteMu = useMutation({
     mutationFn: async (id: string) => {
@@ -67,30 +88,63 @@ export function CategoriesPage() {
     },
   });
 
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    setSearch(searchInput);
+    setPage(0);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center flex-wrap gap-4">
-        <div className="flex items-center gap-4">
-          <h1 className="text-2xl font-semibold text-stone-100">{t('admin.categories.title')}</h1>
-          <select
-            value={filterMenuTypeId}
-            onChange={(e) => setFilterMenuTypeId(e.target.value)}
-            className="px-3 py-2 rounded-lg bg-[var(--color-app-bg)] border border-[var(--color-border)] text-stone-100 text-sm"
-          >
-            <option value="">{t('common.all')}</option>
-            {menuTypes.map((mt) => (
-              <option key={mt.id} value={mt.id}>
-                {mt.translations?.find((tr) => tr.locale === 'ru')?.name || mt.code}
-              </option>
-            ))}
-          </select>
-        </div>
+        <h1 className="text-2xl font-semibold text-stone-100">{t('admin.categories.title')}</h1>
         <button onClick={() => setModal('create')} className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium" style={{ backgroundColor: 'var(--color-app-accent)', color: 'var(--color-app-bg)' }}>
           <Plus className="w-4 h-4" /> {t('common.add')}
         </button>
       </div>
 
-      <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-app-panel)] overflow-hidden">
+      <div className="flex items-center gap-3 flex-wrap">
+        <select
+          value={filterMenuTypeId}
+          onChange={(e) => { setFilterMenuTypeId(e.target.value); setPage(0); }}
+          className="px-3 py-2 rounded-lg bg-[var(--color-app-bg)] border border-[var(--color-border)] text-stone-100 text-sm"
+        >
+          <option value="">{t('common.all')}</option>
+          {menuTypes.map((mt) => (
+            <option key={mt.id} value={mt.id}>
+              {mt.translations?.find((tr) => tr.locale === 'ru')?.name || mt.code}
+            </option>
+          ))}
+        </select>
+
+        <form onSubmit={handleSearch} className="flex items-center gap-2 flex-1 min-w-[200px] max-w-sm">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-500" />
+            <input
+              type="text"
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              placeholder={t('common.search')}
+              className="w-full pl-9 pr-3 py-2 rounded-lg bg-[var(--color-app-bg)] border border-[var(--color-border)] text-stone-100 text-sm placeholder:text-stone-500 focus:outline-none focus:ring-2 focus:ring-[var(--color-app-accent)]/40"
+            />
+          </div>
+          <button type="submit" className="px-3 py-2 rounded-lg text-sm text-stone-400 hover:text-stone-200 hover:bg-white/5 border border-[var(--color-border)]">
+            <Search className="w-4 h-4" />
+          </button>
+        </form>
+
+        <div className="flex items-center gap-2">
+          <ArrowUpDown className="w-4 h-4 text-stone-500" />
+          <button
+            onClick={() => { setSortOrder((prev) => prev === 'asc' ? 'desc' : 'asc'); setPage(0); }}
+            className="px-3 py-2 rounded-lg text-sm text-stone-400 hover:text-stone-200 hover:bg-white/5 border border-[var(--color-border)]"
+          >
+            {sortOrder === 'asc' ? '↑' : '↓'}
+          </button>
+        </div>
+      </div>
+
+      <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-app-panel)] overflow-auto">
         <table className="w-full">
           <thead>
             <tr className="border-b border-[var(--color-border)]">
@@ -120,9 +174,39 @@ export function CategoriesPage() {
                 </td>
               </tr>
             ))}
+            {list.length === 0 && !isLoading && (
+              <tr>
+                <td colSpan={3} className="px-4 py-8 text-center text-stone-500 text-sm">{t('common.noResults')}</td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>
+
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between">
+          <p className="text-sm text-stone-500">
+            {page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, total)} {t('common.of')} {total}
+          </p>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setPage((p) => Math.max(0, p - 1))}
+              disabled={page === 0}
+              className="flex items-center gap-1 px-3 py-2 rounded-lg text-sm text-stone-400 hover:text-stone-200 hover:bg-white/5 border border-[var(--color-border)] disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              <ChevronLeft className="w-4 h-4" /> {t('common.prev')}
+            </button>
+            <span className="text-sm text-stone-400">{page + 1} / {totalPages}</span>
+            <button
+              onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+              disabled={page >= totalPages - 1}
+              className="flex items-center gap-1 px-3 py-2 rounded-lg text-sm text-stone-400 hover:text-stone-200 hover:bg-white/5 border border-[var(--color-border)] disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              {t('common.next')} <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
 
       {modal === 'create' && <CreateModal menuTypeId={filterMenuTypeId || menuTypes[0]?.id} onClose={() => setModal(null)} />}
       {editing && <EditModal item={editing} onClose={() => setEditing(null)} />}
@@ -136,6 +220,8 @@ function CreateModal({ menuTypeId, onClose }: { menuTypeId: string; onClose: () 
   const [nameRu, setNameRu] = useState('');
   const [nameEn, setNameEn] = useState('');
   const [sortOrder, setSortOrder] = useState(0);
+  const [imagePath, setImagePath] = useState<string | null>(null);
+  const [createdId, setCreatedId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -147,12 +233,14 @@ function CreateModal({ menuTypeId, onClose }: { menuTypeId: string; onClose: () 
       const res = await fetch(`${API_BASE}/admin/categories`, {
         method: 'POST',
         headers: headers(),
-        body: JSON.stringify({ menuTypeId, sortOrder, translations }),
+        body: JSON.stringify({ menuTypeId, sortOrder, imagePath, translations }),
       });
       if (!res.ok) throw new Error('Failed');
+      const created = await res.json() as { id: string; imagePath?: string | null };
+      setCreatedId(created.id);
+      if (created.imagePath) setImagePath(created.imagePath);
       queryClient.invalidateQueries({ queryKey: ['admin', 'categories'] });
       toast.success(t('toast.created'));
-      onClose();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : t('errors.createFailed'));
     } finally {
@@ -164,6 +252,14 @@ function CreateModal({ menuTypeId, onClose }: { menuTypeId: string; onClose: () 
     <Modal onClose={onClose}>
       <h2 className="text-lg font-semibold text-stone-100">{t('admin.categories.newTitle')}</h2>
       <form onSubmit={handleSubmit} className="space-y-4 mt-4">
+        {createdId && (
+          <ImageUpload
+            entityId={createdId}
+            entityType="category"
+            currentPath={imagePath}
+            onUploaded={(path) => setImagePath(path)}
+          />
+        )}
         <Field label={t('admin.menuItems.nameRu')} value={nameRu} onChange={setNameRu} required />
         <Field label={t('admin.menuItems.nameEn')} value={nameEn} onChange={setNameEn} />
         <Field label={t('common.sort')} value={String(sortOrder)} onChange={(v) => setSortOrder(Number(v) || 0)} />
@@ -230,7 +326,7 @@ function EditModal({ item, onClose }: { item: CategoryRow; onClose: () => void }
 function Modal({ children, onClose }: { children: React.ReactNode; onClose: () => void }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={(e) => e.target === e.currentTarget && onClose()}>
-      <div className="w-full max-w-md p-6 rounded-2xl border border-[var(--color-border)] bg-[var(--color-app-panel)]">{children}</div>
+      <div className="w-full max-w-md max-h-[90vh] overflow-y-auto p-6 rounded-2xl border border-[var(--color-border)] bg-[var(--color-app-panel)]">{children}</div>
     </div>
   );
 }

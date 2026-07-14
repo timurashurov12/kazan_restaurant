@@ -6,12 +6,41 @@ import { invalidateMenuCache } from '../public-menu/public-menu.service';
 export class MenuTypesService {
   constructor(private prisma: PrismaService) {}
 
-  async findAll(menuId?: string) {
-    return this.prisma.menuType.findMany({
-      where: menuId ? { menuId } : {},
-      orderBy: { sortOrder: 'asc' },
-      include: { translations: true },
-    });
+  async findAll(params: {
+    menuId?: string;
+    search?: string;
+    sortBy?: string;
+    sortOrder?: 'asc' | 'desc';
+    skip?: number;
+    take?: number;
+  }) {
+    const { menuId, search, sortBy = 'sortOrder', sortOrder = 'asc', skip = 0, take = 50 } = params;
+
+    const where: any = {};
+    if (menuId) where.menuId = menuId;
+    if (search) {
+      where.translations = {
+        some: {
+          name: { contains: search, mode: 'insensitive' },
+        },
+      };
+    }
+
+    const orderBy: any = {};
+    orderBy.sortOrder = sortOrder;
+
+    const [items, total] = await Promise.all([
+      this.prisma.menuType.findMany({
+        where,
+        orderBy,
+        skip,
+        take,
+        include: { translations: true },
+      }),
+      this.prisma.menuType.count({ where }),
+    ]);
+
+    return { items, total, skip, take };
   }
 
   async findOne(id: string) {
@@ -27,6 +56,7 @@ export class MenuTypesService {
     menuId: string;
     code: string;
     sortOrder?: number;
+    imagePath?: string;
     translations: { locale: string; name: string }[];
   }) {
     return this.prisma.menuType.create({
@@ -34,6 +64,7 @@ export class MenuTypesService {
         menuId: data.menuId,
         code: data.code,
         sortOrder: data.sortOrder ?? 0,
+        imagePath: data.imagePath ?? null,
         translations: {
           create: data.translations,
         },
@@ -87,10 +118,13 @@ export class MenuTypesService {
   }
 
   async uploadImage(id: string, imagePath: string) {
-    await this.findOne(id);
-    return this.prisma.menuType.update({
+    const existing = await this.findOne(id);
+    const updated = await this.prisma.menuType.update({
       where: { id },
       data: { imagePath },
+      include: { translations: true },
     });
+    invalidateMenuCache(id);
+    return updated;
   }
 }

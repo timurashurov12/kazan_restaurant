@@ -6,12 +6,41 @@ import { invalidateMenuCache } from '../public-menu/public-menu.service';
 export class CategoriesService {
   constructor(private prisma: PrismaService) {}
 
-  async findAll(menuTypeId?: string) {
-    return this.prisma.category.findMany({
-      where: menuTypeId ? { menuTypeId } : {},
-      orderBy: { sortOrder: 'asc' },
-      include: { translations: true },
-    });
+  async findAll(params: {
+    menuTypeId?: string;
+    search?: string;
+    sortBy?: string;
+    sortOrder?: 'asc' | 'desc';
+    skip?: number;
+    take?: number;
+  }) {
+    const { menuTypeId, search, sortBy = 'sortOrder', sortOrder = 'asc', skip = 0, take = 50 } = params;
+
+    const where: any = {};
+    if (menuTypeId) where.menuTypeId = menuTypeId;
+    if (search) {
+      where.translations = {
+        some: {
+          name: { contains: search, mode: 'insensitive' },
+        },
+      };
+    }
+
+    const orderBy: any = {};
+    orderBy.sortOrder = sortOrder;
+
+    const [items, total] = await Promise.all([
+      this.prisma.category.findMany({
+        where,
+        orderBy,
+        skip,
+        take,
+        include: { translations: true },
+      }),
+      this.prisma.category.count({ where }),
+    ]);
+
+    return { items, total, skip, take };
   }
 
   async findOne(id: string) {
@@ -26,12 +55,14 @@ export class CategoriesService {
   async create(data: {
     menuTypeId: string;
     sortOrder?: number;
+    imagePath?: string;
     translations: { locale: string; name: string; description?: string }[];
   }) {
     return this.prisma.category.create({
       data: {
         menuTypeId: data.menuTypeId,
         sortOrder: data.sortOrder ?? 0,
+        imagePath: data.imagePath ?? null,
         translations: {
           create: data.translations,
         },
@@ -92,6 +123,7 @@ export class CategoriesService {
     const updated = await this.prisma.category.update({
       where: { id },
       data: { imagePath },
+      include: { translations: true },
     });
     invalidateMenuCache(existing.menuTypeId);
     return updated;

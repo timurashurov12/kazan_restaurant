@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { Plus, Pencil, Trash2, Languages } from 'lucide-react';
+import { Plus, Pencil, Trash2, Languages, ChevronLeft, ChevronRight, Search, ArrowUpDown } from 'lucide-react';
 import { API_BASE, headers } from './api';
 import { translateMenuItem } from '@/lib/api';
 import { useTranslations } from '@/i18n';
@@ -19,10 +19,24 @@ type MenuItemRow = {
 
 type Category = { id: string; translations: { locale: string; name: string }[] };
 
+type PaginatedResponse = {
+  items: MenuItemRow[];
+  total: number;
+  skip: number;
+  take: number;
+};
+
+const PAGE_SIZE = 20;
+
 export function MenuItemsPage() {
   const queryClient = useQueryClient();
   const { t } = useTranslations();
   const [filterCategoryId, setFilterCategoryId] = useState<string>('');
+  const [search, setSearch] = useState('');
+  const [searchInput, setSearchInput] = useState('');
+  const [sortBy, setSortBy] = useState<'sortOrder' | 'price'>('sortOrder');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+  const [page, setPage] = useState(0);
   const [modal, setModal] = useState<'create' | null>(null);
   const [editing, setEditing] = useState<MenuItemRow | null>(null);
 
@@ -35,17 +49,26 @@ export function MenuItemsPage() {
     },
   });
 
-  const { data: list = [] } = useQuery({
-    queryKey: ['admin', 'menu-items', filterCategoryId],
-    queryFn: async (): Promise<MenuItemRow[]> => {
-      const url = filterCategoryId
-        ? `${API_BASE}/admin/menu-items?categoryId=${filterCategoryId}`
-        : `${API_BASE}/admin/menu-items`;
-      const res = await fetch(url, { headers: headers() });
-      if (!res.ok) return [];
+  const params = new URLSearchParams();
+  if (filterCategoryId) params.set('categoryId', filterCategoryId);
+  if (search) params.set('search', search);
+  params.set('sortBy', sortBy);
+  params.set('sortOrder', sortOrder);
+  params.set('skip', String(page * PAGE_SIZE));
+  params.set('take', String(PAGE_SIZE));
+
+  const { data, isLoading } = useQuery({
+    queryKey: ['admin', 'menu-items', filterCategoryId, search, sortBy, sortOrder, page],
+    queryFn: async (): Promise<PaginatedResponse> => {
+      const res = await fetch(`${API_BASE}/admin/menu-items?${params}`, { headers: headers() });
+      if (!res.ok) return { items: [], total: 0, skip: 0, take: PAGE_SIZE };
       return res.json();
     },
   });
+
+  const list = data?.items ?? [];
+  const total = data?.total ?? 0;
+  const totalPages = Math.ceil(total / PAGE_SIZE);
 
   const deleteMu = useMutation({
     mutationFn: async (id: string) => {
@@ -69,27 +92,68 @@ export function MenuItemsPage() {
     },
   });
 
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    setSearch(searchInput);
+    setPage(0);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center flex-wrap gap-4">
-        <div className="flex items-center gap-4">
-          <h1 className="text-2xl font-semibold text-stone-100">{t('admin.menuItems.title')}</h1>
-          <select
-            value={filterCategoryId}
-            onChange={(e) => setFilterCategoryId(e.target.value)}
-            className="px-3 py-2 rounded-lg bg-[var(--color-app-bg)] border border-[var(--color-border)] text-stone-100 text-sm"
-          >
-            <option value="">{t('common.all')}</option>
-            {categories.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.translations?.find((tr) => tr.locale === 'ru')?.name || c.id}
-              </option>
-            ))}
-          </select>
-        </div>
+        <h1 className="text-2xl font-semibold text-stone-100">{t('admin.menuItems.title')}</h1>
         <button onClick={() => setModal('create')} className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium" style={{ backgroundColor: 'var(--color-app-accent)', color: 'var(--color-app-bg)' }}>
           <Plus className="w-4 h-4" /> {t('common.add')}
         </button>
+      </div>
+
+      <div className="flex items-center gap-3 flex-wrap">
+        <select
+          value={filterCategoryId}
+          onChange={(e) => { setFilterCategoryId(e.target.value); setPage(0); }}
+          className="px-3 py-2 rounded-lg bg-[var(--color-app-bg)] border border-[var(--color-border)] text-stone-100 text-sm"
+        >
+          <option value="">{t('common.all')}</option>
+          {categories.map((c) => (
+            <option key={c.id} value={c.id}>
+              {c.translations?.find((tr) => tr.locale === 'ru')?.name || c.id}
+            </option>
+          ))}
+        </select>
+
+        <form onSubmit={handleSearch} className="flex items-center gap-2 flex-1 min-w-[200px] max-w-sm">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-500" />
+            <input
+              type="text"
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              placeholder={t('common.search')}
+              className="w-full pl-9 pr-3 py-2 rounded-lg bg-[var(--color-app-bg)] border border-[var(--color-border)] text-stone-100 text-sm placeholder:text-stone-500 focus:outline-none focus:ring-2 focus:ring-[var(--color-app-accent)]/40"
+            />
+          </div>
+          <button type="submit" className="px-3 py-2 rounded-lg text-sm text-stone-400 hover:text-stone-200 hover:bg-white/5 border border-[var(--color-border)]">
+            <Search className="w-4 h-4" />
+          </button>
+        </form>
+
+        <div className="flex items-center gap-2">
+          <ArrowUpDown className="w-4 h-4 text-stone-500" />
+          <select
+            value={sortBy}
+            onChange={(e) => { setSortBy(e.target.value as 'sortOrder' | 'price'); setPage(0); }}
+            className="px-3 py-2 rounded-lg bg-[var(--color-app-bg)] border border-[var(--color-border)] text-stone-100 text-sm"
+          >
+            <option value="sortOrder">{t('common.sortBySort')}</option>
+            <option value="price">{t('common.sortByPrice')}</option>
+          </select>
+          <button
+            onClick={() => { setSortOrder((prev) => prev === 'asc' ? 'desc' : 'asc'); setPage(0); }}
+            className="px-3 py-2 rounded-lg text-sm text-stone-400 hover:text-stone-200 hover:bg-white/5 border border-[var(--color-border)]"
+          >
+            {sortOrder === 'asc' ? '↑' : '↓'}
+          </button>
+        </div>
       </div>
 
       <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-app-panel)] overflow-auto">
@@ -126,9 +190,39 @@ export function MenuItemsPage() {
                 </td>
               </tr>
             ))}
+            {list.length === 0 && !isLoading && (
+              <tr>
+                <td colSpan={5} className="px-4 py-8 text-center text-stone-500 text-sm">{t('common.noResults')}</td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>
+
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between">
+          <p className="text-sm text-stone-500">
+            {page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, total)} {t('common.of')} {total}
+          </p>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setPage((p) => Math.max(0, p - 1))}
+              disabled={page === 0}
+              className="flex items-center gap-1 px-3 py-2 rounded-lg text-sm text-stone-400 hover:text-stone-200 hover:bg-white/5 border border-[var(--color-border)] disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              <ChevronLeft className="w-4 h-4" /> {t('common.prev')}
+            </button>
+            <span className="text-sm text-stone-400">{page + 1} / {totalPages}</span>
+            <button
+              onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+              disabled={page >= totalPages - 1}
+              className="flex items-center gap-1 px-3 py-2 rounded-lg text-sm text-stone-400 hover:text-stone-200 hover:bg-white/5 border border-[var(--color-border)] disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              {t('common.next')} <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
 
       {modal === 'create' && <CreateModal categoryId={filterCategoryId || categories[0]?.id} onClose={() => setModal(null)} />}
       {editing && <EditModal item={editing} onClose={() => setEditing(null)} />}
@@ -145,6 +239,8 @@ function CreateModal({ categoryId, onClose }: { categoryId: string; onClose: () 
   const [price, setPrice] = useState('');
   const [weight, setWeight] = useState('');
   const [sortOrder, setSortOrder] = useState(0);
+  const [imagePath, setImagePath] = useState<string | null>(null);
+  const [createdId, setCreatedId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -156,12 +252,14 @@ function CreateModal({ categoryId, onClose }: { categoryId: string; onClose: () 
       const res = await fetch(`${API_BASE}/admin/menu-items`, {
         method: 'POST',
         headers: headers(),
-        body: JSON.stringify({ categoryId, price: Number(price), weightOrVolume: weight || undefined, sortOrder, translations }),
+        body: JSON.stringify({ categoryId, price: Number(price), weightOrVolume: weight || undefined, sortOrder, imagePath, translations }),
       });
       if (!res.ok) throw new Error('Failed');
+      const created = await res.json() as { id: string; imagePath?: string | null };
+      setCreatedId(created.id);
+      if (created.imagePath) setImagePath(created.imagePath);
       queryClient.invalidateQueries({ queryKey: ['admin', 'menu-items'] });
       toast.success(t('toast.created'));
-      onClose();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : t('errors.createFailed'));
     } finally {
@@ -173,6 +271,14 @@ function CreateModal({ categoryId, onClose }: { categoryId: string; onClose: () 
     <Modal onClose={onClose}>
       <h2 className="text-lg font-semibold text-stone-100">{t('admin.menuItems.newTitle')}</h2>
       <form onSubmit={handleSubmit} className="space-y-4 mt-4">
+        {createdId && (
+          <ImageUpload
+            entityId={createdId}
+            entityType="menu-item"
+            currentPath={imagePath}
+            onUploaded={(path) => setImagePath(path)}
+          />
+        )}
         <Field label={t('admin.menuItems.nameRu')} value={nameRu} onChange={setNameRu} required />
         <Field label={t('admin.menuItems.nameEn')} value={nameEn} onChange={setNameEn} />
         <Field label={t('admin.menuItems.descriptionRu')} value={descRu} onChange={setDescRu} />

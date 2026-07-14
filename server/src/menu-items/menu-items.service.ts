@@ -6,12 +6,45 @@ import { invalidateMenuCache } from '../public-menu/public-menu.service';
 export class MenuItemsService {
   constructor(private prisma: PrismaService) {}
 
-  async findAll(categoryId?: string) {
-    return this.prisma.menuItem.findMany({
-      where: categoryId ? { categoryId } : {},
-      orderBy: { sortOrder: 'asc' },
-      include: { translations: true, category: true },
-    });
+  async findAll(params: {
+    categoryId?: string;
+    search?: string;
+    sortBy?: string;
+    sortOrder?: 'asc' | 'desc';
+    skip?: number;
+    take?: number;
+  }) {
+    const { categoryId, search, sortBy = 'sortOrder', sortOrder = 'asc', skip = 0, take = 50 } = params;
+
+    const where: any = {};
+    if (categoryId) where.categoryId = categoryId;
+    if (search) {
+      where.translations = {
+        some: {
+          name: { contains: search, mode: 'insensitive' },
+        },
+      };
+    }
+
+    const orderBy: any = {};
+    if (sortBy === 'price') {
+      orderBy.price = sortOrder;
+    } else {
+      orderBy.sortOrder = sortOrder;
+    }
+
+    const [items, total] = await Promise.all([
+      this.prisma.menuItem.findMany({
+        where,
+        orderBy,
+        skip,
+        take,
+        include: { translations: true, category: true },
+      }),
+      this.prisma.menuItem.count({ where }),
+    ]);
+
+    return { items, total, skip, take };
   }
 
   async findOne(id: string) {
@@ -28,6 +61,7 @@ export class MenuItemsService {
     price: number;
     weightOrVolume?: string;
     sortOrder?: number;
+    imagePath?: string;
     translations: {
       locale: string;
       name: string;
@@ -40,6 +74,7 @@ export class MenuItemsService {
         price: data.price,
         weightOrVolume: data.weightOrVolume,
         sortOrder: data.sortOrder ?? 0,
+        imagePath: data.imagePath ?? null,
         translations: {
           create: data.translations,
         },
@@ -108,6 +143,7 @@ export class MenuItemsService {
     const updated = await this.prisma.menuItem.update({
       where: { id },
       data: { imagePath },
+      include: { translations: true, category: true },
     });
     invalidateMenuCache(existing.category.menuTypeId);
     return updated;

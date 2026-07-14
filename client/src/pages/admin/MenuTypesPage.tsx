@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { Plus, Pencil, Trash2, Languages } from 'lucide-react';
+import { Plus, Pencil, Trash2, Languages, ChevronLeft, ChevronRight, Search, ArrowUpDown } from 'lucide-react';
 import { API_BASE, headers } from './api';
 import { translateMenuType } from '@/lib/api';
 import { useTranslations } from '@/i18n';
@@ -12,42 +12,57 @@ type MenuTypeRow = {
   code: string;
   imagePath?: string | null;
   menuId: string;
+  sortOrder: number;
   translations: { locale: string; name: string }[];
 };
 
-async function fetchMenuTypes(menuId?: string): Promise<MenuTypeRow[]> {
-  const url = menuId
-    ? `${API_BASE}/admin/menu-types?menuId=${menuId}`
-    : `${API_BASE}/admin/menu-types`;
-  const res = await fetch(url, { headers: headers() });
-  if (!res.ok) throw new Error('Failed to fetch');
-  return res.json();
-}
+type PaginatedResponse = {
+  items: MenuTypeRow[];
+  total: number;
+  skip: number;
+  take: number;
+};
+
+const PAGE_SIZE = 20;
 
 export function MenuTypesPage() {
   const queryClient = useQueryClient();
   const { t } = useTranslations();
+  const [search, setSearch] = useState('');
+  const [searchInput, setSearchInput] = useState('');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+  const [page, setPage] = useState(0);
   const [modal, setModal] = useState<'create' | null>(null);
   const [editing, setEditing] = useState<MenuTypeRow | null>(null);
 
-  const { data: list = [], isLoading } = useQuery({
-    queryKey: ['admin', 'menu-types'],
-    queryFn: () => fetchMenuTypes(),
+  const params = new URLSearchParams();
+  if (search) params.set('search', search);
+  params.set('sortOrder', sortOrder);
+  params.set('skip', String(page * PAGE_SIZE));
+  params.set('take', String(PAGE_SIZE));
+
+  const { data, isLoading } = useQuery({
+    queryKey: ['admin', 'menu-types', search, sortOrder, page],
+    queryFn: async (): Promise<PaginatedResponse> => {
+      const res = await fetch(`${API_BASE}/admin/menu-types?${params}`, { headers: headers() });
+      if (!res.ok) return { items: [], total: 0, skip: 0, take: PAGE_SIZE };
+      return res.json();
+    },
   });
+
+  const list = data?.items ?? [];
+  const total = data?.total ?? 0;
+  const totalPages = Math.ceil(total / PAGE_SIZE);
 
   const deleteMu = useMutation({
     mutationFn: async (id: string) => {
-      const res = await fetch(`${API_BASE}/admin/menu-types/${id}`, {
-        method: 'DELETE',
-        headers: headers(),
-      });
-      if (!res.ok) throw new Error('Failed to delete');
+      const res = await fetch(`${API_BASE}/admin/menu-types/${id}`, { method: 'DELETE', headers: headers() });
+      if (!res.ok) throw new Error('Failed');
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'menu-types'] });
       toast.success(t('toast.deleted'));
     },
-    onError: (err: Error) => toast.error(err.message),
   });
 
   const translateMu = useMutation({
@@ -61,20 +76,54 @@ export function MenuTypesPage() {
     },
   });
 
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    setSearch(searchInput);
+    setPage(0);
+  };
+
   if (isLoading) {
     return <div className="text-stone-400">{t('common.loading')}</div>;
   }
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-center flex-wrap gap-4">
         <h1 className="text-2xl font-semibold text-stone-100">{t('admin.menuTypes.title')}</h1>
         <button onClick={() => setModal('create')} className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium" style={{ backgroundColor: 'var(--color-app-accent)', color: 'var(--color-app-bg)' }}>
           <Plus className="w-4 h-4" /> {t('common.add')}
         </button>
       </div>
 
-      <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-app-panel)] overflow-hidden">
+      <div className="flex items-center gap-3 flex-wrap">
+        <form onSubmit={handleSearch} className="flex items-center gap-2 flex-1 min-w-[200px] max-w-sm">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-500" />
+            <input
+              type="text"
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              placeholder={t('common.search')}
+              className="w-full pl-9 pr-3 py-2 rounded-lg bg-[var(--color-app-bg)] border border-[var(--color-border)] text-stone-100 text-sm placeholder:text-stone-500 focus:outline-none focus:ring-2 focus:ring-[var(--color-app-accent)]/40"
+            />
+          </div>
+          <button type="submit" className="px-3 py-2 rounded-lg text-sm text-stone-400 hover:text-stone-200 hover:bg-white/5 border border-[var(--color-border)]">
+            <Search className="w-4 h-4" />
+          </button>
+        </form>
+
+        <div className="flex items-center gap-2">
+          <ArrowUpDown className="w-4 h-4 text-stone-500" />
+          <button
+            onClick={() => { setSortOrder((prev) => prev === 'asc' ? 'desc' : 'asc'); setPage(0); }}
+            className="px-3 py-2 rounded-lg text-sm text-stone-400 hover:text-stone-200 hover:bg-white/5 border border-[var(--color-border)]"
+          >
+            {sortOrder === 'asc' ? '↑' : '↓'}
+          </button>
+        </div>
+      </div>
+
+      <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-app-panel)] overflow-auto">
         <table className="w-full">
           <thead>
             <tr className="border-b border-[var(--color-border)]">
@@ -98,19 +147,45 @@ export function MenuTypesPage() {
                 <td className="px-4 py-3 text-right">
                   <div className="flex items-center justify-end gap-1">
                     <button onClick={() => translateMu.mutate(item.id)} disabled={translateMu.isPending} className="p-2 text-blue-400 hover:bg-blue-500/10 rounded-lg" title={t('common.translate')}><Languages className="w-4 h-4" /></button>
-                    <button onClick={() => setEditing(item)} className="p-2 text-[var(--color-app-accent)] hover:bg-[var(--color-app-accent)]/10 rounded-lg" title={t('common.edit')}>
-                      <Pencil className="w-4 h-4" />
-                    </button>
-                    <button onClick={() => { if (confirm(t('common.confirmDelete'))) deleteMu.mutate(item.id); }} className="p-2 text-red-400 hover:bg-red-500/10 rounded-lg" title={t('common.delete')}>
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+                    <button onClick={() => setEditing(item)} className="p-2 text-[var(--color-app-accent)] hover:bg-[var(--color-app-accent)]/10 rounded-lg"><Pencil className="w-4 h-4" /></button>
+                    <button onClick={() => { if (confirm(t('common.confirmDelete'))) deleteMu.mutate(item.id); }} className="p-2 text-red-400 hover:bg-red-500/10 rounded-lg"><Trash2 className="w-4 h-4" /></button>
                   </div>
                 </td>
               </tr>
             ))}
+            {list.length === 0 && (
+              <tr>
+                <td colSpan={3} className="px-4 py-8 text-center text-stone-500 text-sm">{t('common.noResults')}</td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>
+
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between">
+          <p className="text-sm text-stone-500">
+            {page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, total)} {t('common.of')} {total}
+          </p>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setPage((p) => Math.max(0, p - 1))}
+              disabled={page === 0}
+              className="flex items-center gap-1 px-3 py-2 rounded-lg text-sm text-stone-400 hover:text-stone-200 hover:bg-white/5 border border-[var(--color-border)] disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              <ChevronLeft className="w-4 h-4" /> {t('common.prev')}
+            </button>
+            <span className="text-sm text-stone-400">{page + 1} / {totalPages}</span>
+            <button
+              onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+              disabled={page >= totalPages - 1}
+              className="flex items-center gap-1 px-3 py-2 rounded-lg text-sm text-stone-400 hover:text-stone-200 hover:bg-white/5 border border-[var(--color-border)] disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              {t('common.next')} <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
 
       {modal === 'create' && <CreateModal onClose={() => setModal(null)} />}
       {editing && <EditModal item={editing} onClose={() => setEditing(null)} />}
@@ -124,6 +199,8 @@ function CreateModal({ onClose }: { onClose: () => void }) {
   const [code, setCode] = useState('');
   const [nameRu, setNameRu] = useState('');
   const [nameEn, setNameEn] = useState('');
+  const [imagePath, setImagePath] = useState<string | null>(null);
+  const [createdId, setCreatedId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -138,13 +215,16 @@ function CreateModal({ onClose }: { onClose: () => void }) {
         body: JSON.stringify({
           menuId: 'seed_menu_default',
           code: code || 'main',
+          imagePath,
           translations,
         }),
       });
-      if (!res.ok) throw new Error('Failed to create');
+      if (!res.ok) throw new Error('Failed');
+      const created = await res.json() as { id: string; imagePath?: string | null };
+      setCreatedId(created.id);
+      if (created.imagePath) setImagePath(created.imagePath);
       queryClient.invalidateQueries({ queryKey: ['admin', 'menu-types'] });
       toast.success(t('toast.created'));
-      onClose();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : t('errors.createFailed'));
     } finally {
@@ -156,14 +236,20 @@ function CreateModal({ onClose }: { onClose: () => void }) {
     <Modal onClose={onClose}>
       <h2 className="text-lg font-semibold text-stone-100">{t('admin.menuTypes.newTitle')}</h2>
       <form onSubmit={handleSubmit} className="space-y-4 mt-4">
+        {createdId && (
+          <ImageUpload
+            entityId={createdId}
+            entityType="menu-type"
+            currentPath={imagePath}
+            onUploaded={(path) => setImagePath(path)}
+          />
+        )}
         <Field label={t('common.code')} value={code} onChange={setCode} placeholder={t('admin.menuTypes.codePlaceholder')} />
         <Field label={t('admin.menuItems.nameRu')} value={nameRu} onChange={setNameRu} placeholder={t('home.mainMenu')} required />
         <Field label={t('admin.menuItems.nameEn')} value={nameEn} onChange={setNameEn} placeholder={t('home.mainMenu')} />
         <div className="flex gap-2 justify-end">
-          <button type="button" onClick={onClose} className="px-4 py-2 rounded-lg text-sm text-stone-400 hover:text-stone-200">{t('common.cancel')}</button>
-          <button type="submit" disabled={loading} className="px-4 py-2 rounded-lg text-sm font-medium" style={{ backgroundColor: 'var(--color-app-accent)', color: 'var(--color-app-bg)' }}>
-            {loading ? t('common.loading') : t('common.create')}
-          </button>
+          <button type="button" onClick={onClose} className="px-4 py-2 rounded-lg text-sm text-stone-400">{t('common.cancel')}</button>
+          <button type="submit" disabled={loading} className="px-4 py-2 rounded-lg text-sm font-medium" style={{ backgroundColor: 'var(--color-app-accent)', color: 'var(--color-app-bg)' }}>{t('common.create')}</button>
         </div>
       </form>
     </Modal>
@@ -178,10 +264,6 @@ function EditModal({ item, onClose }: { item: MenuTypeRow; onClose: () => void }
   const [imagePath, setImagePath] = useState(item.imagePath || null);
   const [loading, setLoading] = useState(false);
 
-  const updateTranslation = (index: number, value: string) => {
-    setTranslations((prev) => prev.map((tr, i) => (i === index ? { ...tr, name: value } : tr)));
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -191,7 +273,7 @@ function EditModal({ item, onClose }: { item: MenuTypeRow; onClose: () => void }
         headers: headers(),
         body: JSON.stringify({ code, imagePath, translations }),
       });
-      if (!res.ok) throw new Error('Failed to update');
+      if (!res.ok) throw new Error('Failed');
       queryClient.invalidateQueries({ queryKey: ['admin', 'menu-types'] });
       toast.success(t('toast.updated'));
       onClose();
@@ -214,13 +296,11 @@ function EditModal({ item, onClose }: { item: MenuTypeRow; onClose: () => void }
         />
         <Field label={t('common.code')} value={code} onChange={setCode} />
         {translations.map((tr, i) => (
-          <Field key={tr.locale} label={`${t('common.name')} (${tr.locale.toUpperCase()})`} value={tr.name} onChange={(v) => updateTranslation(i, v)} />
+          <Field key={tr.locale} label={`${t('common.name')} (${tr.locale.toUpperCase()})`} value={tr.name} onChange={(v) => setTranslations((prev) => prev.map((x, j) => j === i ? { ...x, name: v } : x))} />
         ))}
         <div className="flex gap-2 justify-end">
-          <button type="button" onClick={onClose} className="px-4 py-2 rounded-lg text-sm text-stone-400 hover:text-stone-200">{t('common.cancel')}</button>
-          <button type="submit" disabled={loading} className="px-4 py-2 rounded-lg text-sm font-medium" style={{ backgroundColor: 'var(--color-app-accent)', color: 'var(--color-app-bg)' }}>
-            {loading ? t('common.loading') : t('common.save')}
-          </button>
+          <button type="button" onClick={onClose} className="px-4 py-2 rounded-lg text-sm text-stone-400">{t('common.cancel')}</button>
+          <button type="submit" disabled={loading} className="px-4 py-2 rounded-lg text-sm font-medium" style={{ backgroundColor: 'var(--color-app-accent)', color: 'var(--color-app-bg)' }}>{t('common.save')}</button>
         </div>
       </form>
     </Modal>
@@ -228,17 +308,9 @@ function EditModal({ item, onClose }: { item: MenuTypeRow; onClose: () => void }
 }
 
 function Modal({ children, onClose }: { children: React.ReactNode; onClose: () => void }) {
-  useEffect(() => {
-    const h = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
-    window.addEventListener('keydown', h);
-    return () => window.removeEventListener('keydown', h);
-  }, [onClose]);
-
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={(e) => e.target === e.currentTarget && onClose()}>
-      <div className="w-full max-w-md p-6 rounded-2xl border border-[var(--color-border)] bg-[var(--color-app-panel)]" onClick={(e) => e.stopPropagation()}>
-        {children}
-      </div>
+      <div className="w-full max-w-md max-h-[90vh] overflow-y-auto p-6 rounded-2xl border border-[var(--color-border)] bg-[var(--color-app-panel)]">{children}</div>
     </div>
   );
 }
@@ -247,13 +319,7 @@ function Field({ label, value, onChange, placeholder, required }: { label: strin
   return (
     <div>
       <label className="block text-sm font-medium text-stone-400 mb-1">{label}</label>
-      <input
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        required={required}
-        className="w-full px-4 py-2 rounded-lg bg-[var(--color-app-bg)] border border-[var(--color-border)] text-stone-100 placeholder:text-stone-500 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-app-accent)]/40"
-      />
+      <input value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} required={required} className="w-full px-4 py-2 rounded-lg bg-[var(--color-app-bg)] border border-[var(--color-border)] text-stone-100 text-sm placeholder:text-stone-500 focus:outline-none focus:ring-2 focus:ring-[var(--color-app-accent)]/40" />
     </div>
   );
 }

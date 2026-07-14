@@ -30,8 +30,27 @@ export class MenuItemsController {
   @Get()
   @ApiOperation({ summary: 'List menu items' })
   @ApiQuery({ name: 'categoryId', required: false })
-  findAll(@Query('categoryId') categoryId?: string) {
-    return this.menuItemsService.findAll(categoryId);
+  @ApiQuery({ name: 'search', required: false })
+  @ApiQuery({ name: 'sortBy', required: false })
+  @ApiQuery({ name: 'sortOrder', required: false })
+  @ApiQuery({ name: 'skip', required: false })
+  @ApiQuery({ name: 'take', required: false })
+  findAll(
+    @Query('categoryId') categoryId?: string,
+    @Query('search') search?: string,
+    @Query('sortBy') sortBy?: string,
+    @Query('sortOrder') sortOrder?: string,
+    @Query('skip') skip?: string,
+    @Query('take') take?: string,
+  ) {
+    return this.menuItemsService.findAll({
+      categoryId,
+      search,
+      sortBy,
+      sortOrder: sortOrder === 'desc' ? 'desc' : 'asc',
+      skip: skip ? Number(skip) : 0,
+      take: take ? Number(take) : 50,
+    });
   }
 
   @Get(':id')
@@ -49,6 +68,7 @@ export class MenuItemsController {
       price: number;
       weightOrVolume?: string;
       sortOrder?: number;
+      imagePath?: string;
       translations: {
         locale: string;
         name: string;

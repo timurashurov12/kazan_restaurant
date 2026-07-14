@@ -26,7 +26,14 @@
     "weight": "",
     "actions": "",
     "code": "",
-    "currency": ""
+    "currency": "",
+    "upload": "",
+    "change": "",
+    "prev": "",
+    "next": "",
+    "of": "",
+    "sortByPrice": "",
+    "sortBySort": ""
   },
   "home": {
     "title": "",

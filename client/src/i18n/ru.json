@@ -28,7 +28,12 @@
     "code": "Код",
     "currency": "сум",
     "upload": "Загрузить",
-    "change": "Изменить"
+    "change": "Изменить",
+    "prev": "Назад",
+    "next": "Далее",
+    "of": "из",
+    "sortByPrice": "По цене",
+    "sortBySort": "По порядку"
   },
   "home": {
     "title": "Наше меню",

@@ -28,7 +28,12 @@
     "code": "Code",
     "currency": "sum",
     "upload": "Upload",
-    "change": "Change"
+    "change": "Change",
+    "prev": "Prev",
+    "next": "Next",
+    "of": "of",
+    "sortByPrice": "By price",
+    "sortBySort": "By order"
   },
   "home": {
     "title": "Our Menu",
