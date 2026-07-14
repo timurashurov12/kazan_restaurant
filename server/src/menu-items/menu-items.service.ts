@@ -29,6 +29,8 @@ export class MenuItemsService {
     const orderBy: any = {};
     if (sortBy === 'price') {
       orderBy.price = sortOrder;
+    } else if (sortBy === 'category') {
+      orderBy.categoryId = sortOrder;
     } else {
       orderBy.sortOrder = sortOrder;
     }

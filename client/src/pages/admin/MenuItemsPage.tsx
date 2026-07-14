@@ -36,7 +36,7 @@ export function MenuItemsPage() {
   const [filterCategoryId, setFilterCategoryId] = useState<string>('');
   const [search, setSearch] = useState('');
   const [searchInput, setSearchInput] = useState('');
-  const [sortBy, setSortBy] = useState<'sortOrder' | 'price'>('sortOrder');
+  const [sortBy, setSortBy] = useState<'sortOrder' | 'price' | 'category'>('sortOrder');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const [page, setPage] = useState(0);
   const [filterOpen, setFilterOpen] = useState(false);
@@ -144,7 +144,7 @@ export function MenuItemsPage() {
             <tr className="border-b border-[var(--color-border)]">
               <SortHeader label={t('common.sort')} field="sortOrder" sortBy={sortBy} sortOrder={sortOrder} onSort={(field, order) => { setSortBy(field); setSortOrder(order); setPage(0); }} />
               <th className="px-4 py-3 text-left text-xs font-medium text-stone-400 uppercase">{t('common.name')}</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-stone-400 uppercase">{t('admin.categories.title')}</th>
+              <SortHeader label={t('admin.categories.title')} field="category" sortBy={sortBy} sortOrder={sortOrder} onSort={(field, order) => { setSortBy(field); setSortOrder(order); setPage(0); }} />
               <SortHeader label={t('common.price')} field="price" sortBy={sortBy} sortOrder={sortOrder} onSort={(field, order) => { setSortBy(field); setSortOrder(order); setPage(0); }} align="right" />
               <th className="px-4 py-3 text-right text-xs font-medium text-stone-400 uppercase">{t('common.weight')}</th>
               <th className="px-4 py-3 text-right text-xs font-medium text-stone-400 uppercase">{t('common.actions')}</th>
@@ -259,10 +259,10 @@ export function MenuItemsPage() {
 
 function SortHeader({ label, field, sortBy, sortOrder, onSort, align = 'left' }: {
   label: string;
-  field: 'sortOrder' | 'price';
+  field: 'sortOrder' | 'price' | 'category';
   sortBy: string;
   sortOrder: 'asc' | 'desc';
-  onSort: (field: 'sortOrder' | 'price', order: 'asc' | 'desc') => void;
+  onSort: (field: 'sortOrder' | 'price' | 'category', order: 'asc' | 'desc') => void;
   align?: 'left' | 'right';
 }) {
   const active = sortBy === field;
