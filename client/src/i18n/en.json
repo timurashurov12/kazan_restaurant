@@ -33,7 +33,8 @@
     "next": "Next",
     "of": "of",
     "sortByPrice": "By price",
-    "sortBySort": "By order"
+    "sortBySort": "By order",
+    "filter": "Filter"
   },
   "home": {
     "title": "Our Menu",

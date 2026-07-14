@@ -33,7 +33,8 @@
     "next": "Далее",
     "of": "из",
     "sortByPrice": "По цене",
-    "sortBySort": "По порядку"
+    "sortBySort": "По порядку",
+    "filter": "Фильтр"
   },
   "home": {
     "title": "Наше меню",

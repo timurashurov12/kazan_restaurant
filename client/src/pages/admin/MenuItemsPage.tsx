@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { Plus, Pencil, Trash2, Languages, ChevronLeft, ChevronRight, Search, ArrowUpDown } from 'lucide-react';
+import { Plus, Pencil, Trash2, Languages, ChevronLeft, ChevronRight, Search, ArrowUpDown, SlidersHorizontal, X } from 'lucide-react';
 import { API_BASE, headers, authFetch } from './api';
 import { translateMenuItem } from '@/lib/api';
 import { useTranslations } from '@/i18n';
@@ -16,6 +16,7 @@ type MenuItemRow = {
   sortOrder: number;
   imagePath?: string | null;
   translations: { locale: string; name: string; description?: string | null }[];
+  category?: { id: string; translations: { locale: string; name: string }[] } | null;
 };
 
 type Category = { id: string; translations: { locale: string; name: string }[] };
@@ -41,6 +42,7 @@ export function MenuItemsPage() {
   const [page, setPage] = useState(0);
   const [modal, setModal] = useState<'create' | null>(null);
   const [editing, setEditing] = useState<MenuItemRow | null>(null);
+  const [filterOpen, setFilterOpen] = useState(false);
 
   const { data: categoriesData } = useQuery({
     queryKey: ['admin', 'categories'],
@@ -120,18 +122,18 @@ export function MenuItemsPage() {
       </div>
 
       <div className="flex items-center gap-3 flex-wrap">
-        <select
-          value={filterCategoryId}
-          onChange={(e) => { setFilterCategoryId(e.target.value); setPage(0); }}
-          className="px-3 py-2 rounded-lg bg-[var(--color-app-bg)] border border-[var(--color-border)] text-stone-100 text-sm"
+        <button
+          onClick={() => setFilterOpen(true)}
+          className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-stone-400 hover:text-stone-200 hover:bg-white/5 border border-[var(--color-border)]"
         >
-          <option value="">{t('common.all')}</option>
-          {categories.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.translations?.find((tr) => tr.locale === 'ru')?.name || c.id}
-            </option>
-          ))}
-        </select>
+          <SlidersHorizontal className="w-4 h-4" />
+          {t('common.filter')}
+          {filterCategoryId && (
+            <span className="px-1.5 py-0.5 text-xs rounded-full bg-[var(--color-app-accent)]/20 text-[var(--color-app-accent)]">
+              1
+            </span>
+          )}
+        </button>
 
         <form onSubmit={handleSearch} className="flex items-center gap-2 flex-1 min-w-[200px] max-w-sm">
           <div className="relative flex-1">
@@ -174,6 +176,7 @@ export function MenuItemsPage() {
             <tr className="border-b border-[var(--color-border)]">
               <th className="px-4 py-3 text-left text-xs font-medium text-stone-400 uppercase">{t('common.sort')}</th>
               <th className="px-4 py-3 text-left text-xs font-medium text-stone-400 uppercase">{t('common.name')}</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-stone-400 uppercase">{t('admin.categories.title')}</th>
               <th className="px-4 py-3 text-right text-xs font-medium text-stone-400 uppercase">{t('common.price')}</th>
               <th className="px-4 py-3 text-right text-xs font-medium text-stone-400 uppercase">{t('common.weight')}</th>
               <th className="px-4 py-3 text-right text-xs font-medium text-stone-400 uppercase">{t('common.actions')}</th>
@@ -191,6 +194,9 @@ export function MenuItemsPage() {
                     </div>
                   ))}
                 </td>
+                <td className="px-4 py-3 text-stone-400 text-sm">
+                  {item.category?.translations?.find((tr) => tr.locale === 'ru')?.name || '—'}
+                </td>
                 <td className="px-4 py-3 text-right text-[var(--color-app-accent)] font-semibold text-sm">{Number(item.price).toLocaleString()}</td>
                 <td className="px-4 py-3 text-right text-stone-400 text-sm">{item.weightOrVolume || '—'}</td>
                 <td className="px-4 py-3 text-right">
@@ -204,7 +210,7 @@ export function MenuItemsPage() {
             ))}
             {list.length === 0 && !isLoading && (
               <tr>
-                <td colSpan={5} className="px-4 py-8 text-center text-stone-500 text-sm">{t('common.noResults')}</td>
+                <td colSpan={6} className="px-4 py-8 text-center text-stone-500 text-sm">{t('common.noResults')}</td>
               </tr>
             )}
           </tbody>
@@ -238,6 +244,50 @@ export function MenuItemsPage() {
 
       {modal === 'create' && <CreateModal categoryId={filterCategoryId || categories[0]?.id} languages={languages} onClose={() => setModal(null)} />}
       {editing && <EditModal item={editing} languages={languages} onClose={() => setEditing(null)} />}
+
+      {filterOpen && (
+        <div className="fixed inset-0 z-50 flex justify-end" onClick={(e) => e.target === e.currentTarget && setFilterOpen(false)}>
+          <div className="absolute inset-0 bg-black/40" onClick={() => setFilterOpen(false)} />
+          <div className="relative w-full max-w-sm bg-[var(--color-app-panel)] border-l border-[var(--color-border)] p-6 overflow-y-auto animate-in">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-lg font-semibold text-stone-100">{t('common.filter')}</h2>
+              <button onClick={() => setFilterOpen(false)} className="p-2 text-stone-400 hover:text-stone-200 rounded-lg hover:bg-white/5">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-stone-400 mb-2">{t('admin.categories.title')}</label>
+                <div className="space-y-1">
+                  <button
+                    onClick={() => { setFilterCategoryId(''); setPage(0); setFilterOpen(false); }}
+                    className={`w-full text-left px-3 py-2 rounded-lg text-sm transition ${
+                      !filterCategoryId
+                        ? 'bg-[var(--color-app-accent)]/15 text-[var(--color-app-accent)]'
+                        : 'text-stone-400 hover:text-stone-200 hover:bg-white/5'
+                    }`}
+                  >
+                    {t('common.all')}
+                  </button>
+                  {categories.map((c) => (
+                    <button
+                      key={c.id}
+                      onClick={() => { setFilterCategoryId(c.id); setPage(0); setFilterOpen(false); }}
+                      className={`w-full text-left px-3 py-2 rounded-lg text-sm transition ${
+                        filterCategoryId === c.id
+                          ? 'bg-[var(--color-app-accent)]/15 text-[var(--color-app-accent)]'
+                          : 'text-stone-400 hover:text-stone-200 hover:bg-white/5'
+                      }`}
+                    >
+                      {c.translations?.find((tr) => tr.locale === 'ru')?.name || c.id}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
