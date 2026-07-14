@@ -3,35 +3,37 @@ import { existsSync, mkdirSync } from 'fs';
 import { join } from 'path';
 import * as crypto from 'crypto';
 
+let sharp: typeof import('sharp') | null = null;
+
+try {
+  sharp = require('sharp');
+} catch {
+  // sharp not available
+}
+
 @Injectable()
 export class UploadService {
   private readonly logger = new Logger(UploadService.name);
   private uploadsDir: string;
-  private sharp: typeof import('sharp') | null = null;
 
   constructor() {
     this.uploadsDir = process.env.UPLOADS_DIR || join(process.cwd(), 'uploads');
     if (!existsSync(this.uploadsDir)) {
       mkdirSync(this.uploadsDir, { recursive: true });
     }
-    this.loadSharp();
-  }
-
-  private async loadSharp() {
-    try {
-      this.sharp = await import('sharp');
-      this.logger.log('sharp loaded successfully');
-    } catch {
-      this.logger.warn('sharp not available, images will be saved without compression');
+    if (sharp) {
+      this.logger.log('sharp loaded — images will be compressed to webp');
+    } else {
+      this.logger.warn('sharp not available — images saved in original format');
     }
   }
 
   async saveFile(file: Express.Multer.File): Promise<string> {
-    if (this.sharp) {
+    if (sharp) {
       const filename = `${crypto.randomUUID()}.webp`;
       const filepath = join(this.uploadsDir, filename);
       try {
-        await this.sharp(file.buffer)
+        await sharp(file.buffer)
           .resize(1200, 1200, { fit: 'inside', withoutEnlargement: true })
           .webp({ quality: 80 })
           .toFile(filepath);
