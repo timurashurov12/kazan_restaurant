@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { Plus, Pencil, Trash2, Languages, ChevronLeft, ChevronRight, Search, ArrowUpDown, SlidersHorizontal, X } from 'lucide-react';
+import { Plus, Pencil, Trash2, Languages, ChevronLeft, ChevronRight, Search, SlidersHorizontal, X } from 'lucide-react';
 import { API_BASE, headers, authFetch } from './api';
 import { translateMenuItem } from '@/lib/api';
 import { useTranslations } from '@/i18n';
@@ -136,34 +136,16 @@ export function MenuItemsPage() {
             <Search className="w-4 h-4" />
           </button>
         </form>
-
-        <div className="flex items-center gap-2">
-          <ArrowUpDown className="w-4 h-4 text-stone-500" />
-          <select
-            value={sortBy}
-            onChange={(e) => { setSortBy(e.target.value as 'sortOrder' | 'price'); setPage(0); }}
-            className="px-3 py-2 rounded-lg bg-[var(--color-app-bg)] border border-[var(--color-border)] text-stone-100 text-sm"
-          >
-            <option value="sortOrder">{t('common.sortBySort')}</option>
-            <option value="price">{t('common.sortByPrice')}</option>
-          </select>
-          <button
-            onClick={() => { setSortOrder((prev) => prev === 'asc' ? 'desc' : 'asc'); setPage(0); }}
-            className="px-3 py-2 rounded-lg text-sm text-stone-400 hover:text-stone-200 hover:bg-white/5 border border-[var(--color-border)]"
-          >
-            {sortOrder === 'asc' ? '↑' : '↓'}
-          </button>
-        </div>
       </div>
 
       <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-app-panel)] overflow-auto">
         <table className="w-full">
           <thead>
             <tr className="border-b border-[var(--color-border)]">
-              <th className="px-4 py-3 text-left text-xs font-medium text-stone-400 uppercase">{t('common.sort')}</th>
+              <SortHeader label={t('common.sort')} field="sortOrder" sortBy={sortBy} sortOrder={sortOrder} onSort={(field, order) => { setSortBy(field); setSortOrder(order); setPage(0); }} />
               <th className="px-4 py-3 text-left text-xs font-medium text-stone-400 uppercase">{t('common.name')}</th>
               <th className="px-4 py-3 text-left text-xs font-medium text-stone-400 uppercase">{t('admin.categories.title')}</th>
-              <th className="px-4 py-3 text-right text-xs font-medium text-stone-400 uppercase">{t('common.price')}</th>
+              <SortHeader label={t('common.price')} field="price" sortBy={sortBy} sortOrder={sortOrder} onSort={(field, order) => { setSortBy(field); setSortOrder(order); setPage(0); }} align="right" />
               <th className="px-4 py-3 text-right text-xs font-medium text-stone-400 uppercase">{t('common.weight')}</th>
               <th className="px-4 py-3 text-right text-xs font-medium text-stone-400 uppercase">{t('common.actions')}</th>
             </tr>
@@ -272,5 +254,29 @@ export function MenuItemsPage() {
         </div>
       )}
     </div>
+  );
+}
+
+function SortHeader({ label, field, sortBy, sortOrder, onSort, align = 'left' }: {
+  label: string;
+  field: 'sortOrder' | 'price';
+  sortBy: string;
+  sortOrder: 'asc' | 'desc';
+  onSort: (field: 'sortOrder' | 'price', order: 'asc' | 'desc') => void;
+  align?: 'left' | 'right';
+}) {
+  const active = sortBy === field;
+  const nextOrder = active && sortOrder === 'asc' ? 'desc' : 'asc';
+
+  return (
+    <th
+      onClick={() => onSort(field, nextOrder)}
+      className={`px-4 py-3 text-xs font-medium uppercase cursor-pointer select-none hover:text-stone-200 transition ${align === 'right' ? 'text-right' : 'text-left'} ${active ? 'text-[var(--color-app-accent)]' : 'text-stone-400'}`}
+    >
+      <span className="inline-flex items-center gap-1">
+        {label}
+        {active && <span className="text-[10px]">{sortOrder === 'asc' ? '↑' : '↓'}</span>}
+      </span>
+    </th>
   );
 }
