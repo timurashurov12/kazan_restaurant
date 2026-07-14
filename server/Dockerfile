@@ -14,6 +14,7 @@ RUN npm run build
 
 # -- production stage --
 FROM node:20-alpine
+RUN apk add --no-cache vips vips-dev
 WORKDIR /app
 
 COPY server/package.json ./

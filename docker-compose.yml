@@ -14,6 +14,8 @@ services:
       GEMINI_API_KEY: ${GEMINI_API_KEY:-}
       GROQ_API_KEY: ${GROQ_API_KEY:-}
       TRANSLATE_PROVIDER: ${TRANSLATE_PROVIDER:-gemini}
+    volumes:
+      - uploads:/app/uploads
 
   client:
     build:
@@ -24,3 +26,6 @@ services:
       - "80"
     depends_on:
       - server
+
+volumes:
+  uploads:
