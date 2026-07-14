@@ -121,7 +121,7 @@ export function MenuItemFormPage() {
   }
 
   return (
-    <div className="max-w-4xl space-y-6">
+    <div className="space-y-6">
       <div className="flex items-center gap-3">
         <button onClick={() => navigate('/admin/menu-items')} className="p-2 text-stone-400 hover:text-stone-200 hover:bg-white/5 rounded-lg">
           <ArrowLeft className="w-5 h-5" />
