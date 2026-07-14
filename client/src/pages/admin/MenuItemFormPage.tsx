@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { ArrowLeft, Image as ImageIcon, Settings, Languages } from 'lucide-react';
+import Select from 'react-select';
 import { API_BASE, headers, authFetch } from './api';
 import { useTranslations } from '@/i18n';
 import { ImageUpload } from '@/components/ImageUpload';
@@ -140,18 +141,17 @@ export function MenuItemFormPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="sm:col-span-2">
                   <label className="block text-sm font-medium text-stone-400 mb-1">{t('admin.categories.title')}</label>
-                  <select
-                    value={categoryId}
-                    onChange={(e) => setCategoryId(e.target.value)}
-                    required
-                    className="w-full px-4 py-2 rounded-lg bg-[var(--color-app-bg)] border border-[var(--color-border)] text-stone-100 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-app-accent)]/40"
-                  >
-                    {categories.map((c) => (
-                      <option key={c.id} value={c.id}>
-                        {c.translations?.find((tr) => tr.locale === 'ru')?.name || c.id}
-                      </option>
-                    ))}
-                  </select>
+                  <Select<{ value: string; label: string }>
+                    value={categories.find((c) => c.id === categoryId) ? { value: categoryId, label: categories.find((c) => c.id === categoryId)?.translations?.find((tr) => tr.locale === 'ru')?.name || categoryId } : null}
+                    onChange={(opt) => opt && setCategoryId(opt.value)}
+                    options={categories.map((c) => ({
+                      value: c.id,
+                      label: c.translations?.find((tr) => tr.locale === 'ru')?.name || c.id,
+                    }))}
+                    placeholder={t('common.all')}
+                    isSearchable
+                    styles={selectStyles}
+                  />
                 </div>
                 <Field label={t('common.price')} value={price} onChange={setPrice} required />
                 <Field label={t('common.weight')} value={weight} onChange={setWeight} placeholder={t('admin.menuItems.weightPlaceholder')} />
@@ -225,3 +225,47 @@ function Field({ label, value, onChange, required, placeholder }: { label: strin
     </div>
   );
 }
+
+const selectStyles = {
+  control: (base: Record<string, unknown>, state: { isFocused: boolean }) => ({
+    ...base,
+    backgroundColor: 'var(--color-app-bg)',
+    borderColor: state.isFocused ? 'var(--color-app-accent)' : 'var(--color-border)',
+    borderRadius: '0.5rem',
+    padding: '0.125rem 0',
+    boxShadow: state.isFocused ? '0 0 0 2px rgba(211,174,110,0.25)' : 'none',
+    '&:hover': { borderColor: 'var(--color-app-accent)' },
+  }),
+  menu: (base: Record<string, unknown>) => ({
+    ...base,
+    backgroundColor: 'var(--color-app-panel)',
+    border: '1px solid var(--color-border)',
+    borderRadius: '0.5rem',
+    overflow: 'hidden',
+  }),
+  option: (base: Record<string, unknown>, state: { isFocused: boolean; isSelected: boolean }) => ({
+    ...base,
+    backgroundColor: state.isSelected ? 'var(--color-app-accent)' : state.isFocused ? 'rgba(255,255,255,0.05)' : 'transparent',
+    color: state.isSelected ? 'var(--color-app-bg)' : 'var(--color-app-text, #e7e5e4)',
+    cursor: 'pointer',
+    padding: '0.5rem 1rem',
+  }),
+  singleValue: (base: Record<string, unknown>) => ({
+    ...base,
+    color: '#e7e5e4',
+  }),
+  input: (base: Record<string, unknown>) => ({
+    ...base,
+    color: '#e7e5e4',
+  }),
+  placeholder: (base: Record<string, unknown>) => ({
+    ...base,
+    color: '#78716c',
+  }),
+  indicatorSeparator: () => ({ display: 'none' }),
+  dropdownIndicator: (base: Record<string, unknown>) => ({
+    ...base,
+    color: '#78716c',
+    '&:hover': { color: '#a8a29e' },
+  }),
+};
