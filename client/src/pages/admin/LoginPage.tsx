@@ -3,7 +3,7 @@ import { useNavigate, Navigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { I18nProvider, useTranslations } from '@/i18n';
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+const API_BASE = import.meta.env.VITE_API_URL ?? '';
 
 function LoginPageInner() {
   const navigate = useNavigate();

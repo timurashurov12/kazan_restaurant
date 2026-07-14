@@ -3,7 +3,7 @@ import { useTranslations } from '@/i18n';
 import { publicUploadUrl } from '@/lib/api';
 import { Upload, Image as ImageIcon, Link as LinkIcon, X } from 'lucide-react';
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+const API_BASE = import.meta.env.VITE_API_URL ?? '';
 
 function authHeaders(): Record<string, string> {
   const token = localStorage.getItem('kazan-admin-token');
