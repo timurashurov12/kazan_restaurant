@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Image as ImageIcon, Settings, Languages } from 'lucide-react';
 import { API_BASE, headers, authFetch } from './api';
 import { useTranslations } from '@/i18n';
 import { ImageUpload } from '@/components/ImageUpload';
@@ -121,7 +121,7 @@ export function MenuItemFormPage() {
   }
 
   return (
-    <div className="max-w-lg space-y-6">
+    <div className="max-w-4xl space-y-6">
       <div className="flex items-center gap-3">
         <button onClick={() => navigate('/admin/menu-items')} className="p-2 text-stone-400 hover:text-stone-200 hover:bg-white/5 rounded-lg">
           <ArrowLeft className="w-5 h-5" />
@@ -131,54 +131,88 @@ export function MenuItemFormPage() {
         </h1>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4 p-6 rounded-2xl border border-[var(--color-border)] bg-[var(--color-app-panel)]">
-        {(isEdit || createdId) && (
-          <ImageUpload
-            entityId={createdId || id || ''}
-            entityType="menu-item"
-            currentPath={imagePath}
-            onUploaded={(path) => setImagePath(path)}
-          />
-        )}
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Left: form fields */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Section: Main info */}
+            <FormSection icon={Settings} title={t('common.mainInfo')}>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="sm:col-span-2">
+                  <label className="block text-sm font-medium text-stone-400 mb-1">{t('admin.categories.title')}</label>
+                  <select
+                    value={categoryId}
+                    onChange={(e) => setCategoryId(e.target.value)}
+                    required
+                    className="w-full px-4 py-2 rounded-lg bg-[var(--color-app-bg)] border border-[var(--color-border)] text-stone-100 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-app-accent)]/40"
+                  >
+                    {categories.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.translations?.find((tr) => tr.locale === 'ru')?.name || c.id}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <Field label={t('common.price')} value={price} onChange={setPrice} required />
+                <Field label={t('common.weight')} value={weight} onChange={setWeight} placeholder={t('admin.menuItems.weightPlaceholder')} />
+                <Field label={t('common.sort')} value={String(sortOrder)} onChange={(v) => setSortOrder(Number(v) || 0)} />
+              </div>
+            </FormSection>
 
-        <div>
-          <label className="block text-sm font-medium text-stone-400 mb-1">{t('admin.categories.title')}</label>
-          <select
-            value={categoryId}
-            onChange={(e) => setCategoryId(e.target.value)}
-            required
-            className="w-full px-4 py-2 rounded-lg bg-[var(--color-app-bg)] border border-[var(--color-border)] text-stone-100 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-app-accent)]/40"
-          >
-            {categories.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.translations?.find((tr) => tr.locale === 'ru')?.name || c.id}
-              </option>
-            ))}
-          </select>
+            {/* Section: Translations */}
+            <FormSection icon={Languages} title={t('common.translations')}>
+              {languages.length > 0 ? (
+                <LanguageTabs
+                  languages={languages}
+                  translations={translations}
+                  onChange={setTranslations}
+                  showDescription
+                  nameLabel={t('common.name')}
+                  descriptionLabel={t('admin.menuItems.descriptionRu')}
+                />
+              ) : (
+                <p className="text-stone-500 text-sm">{t('common.loading')}</p>
+              )}
+            </FormSection>
+          </div>
+
+          {/* Right: image */}
+          <div className="space-y-6">
+            <FormSection icon={ImageIcon} title={t('common.image')}>
+              {(isEdit || createdId) ? (
+                <ImageUpload
+                  entityId={createdId || id || ''}
+                  entityType="menu-item"
+                  currentPath={imagePath}
+                  onUploaded={(path) => setImagePath(path)}
+                />
+              ) : (
+                <p className="text-stone-500 text-sm">{t('admin.menuItems.imageAfterSave')}</p>
+              )}
+            </FormSection>
+          </div>
         </div>
 
-        <Field label={t('common.price')} value={price} onChange={setPrice} required />
-        <Field label={t('common.weight')} value={weight} onChange={setWeight} placeholder={t('admin.menuItems.weightPlaceholder')} />
-        <Field label={t('common.sort')} value={String(sortOrder)} onChange={(v) => setSortOrder(Number(v) || 0)} />
-
-        {languages.length > 0 && (
-          <LanguageTabs
-            languages={languages}
-            translations={translations}
-            onChange={setTranslations}
-            showDescription
-            nameLabel={t('common.name')}
-            descriptionLabel={t('admin.menuItems.descriptionRu')}
-          />
-        )}
-
-        <div className="flex gap-2 justify-end pt-2">
+        {/* Actions */}
+        <div className="flex gap-2 justify-end pt-2 border-t border-[var(--color-border)]">
           <button type="button" onClick={() => navigate('/admin/menu-items')} className="px-4 py-2 rounded-lg text-sm text-stone-400">{t('common.cancel')}</button>
-          <button type="submit" disabled={loading} className="px-4 py-2 rounded-lg text-sm font-medium" style={{ backgroundColor: 'var(--color-app-accent)', color: 'var(--color-app-bg)' }}>
+          <button type="submit" disabled={loading} className="px-6 py-2 rounded-lg text-sm font-medium" style={{ backgroundColor: 'var(--color-app-accent)', color: 'var(--color-app-bg)' }}>
             {isEdit ? t('common.save') : t('common.create')}
           </button>
         </div>
       </form>
+    </div>
+  );
+}
+
+function FormSection({ icon: Icon, title, children }: { icon: React.ComponentType<{ className?: string }>; title: string; children: React.ReactNode }) {
+  return (
+    <div className="p-5 rounded-2xl border border-[var(--color-border)] bg-[var(--color-app-panel)]">
+      <div className="flex items-center gap-2 mb-4">
+        <Icon className="w-4 h-4 text-[var(--color-app-accent)]" />
+        <h2 className="text-sm font-semibold text-stone-200 uppercase tracking-wide">{title}</h2>
+      </div>
+      {children}
     </div>
   );
 }

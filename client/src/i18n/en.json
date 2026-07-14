@@ -34,7 +34,11 @@
     "of": "of",
     "sortByPrice": "By price",
     "sortBySort": "By order",
-    "filter": "Filter"
+    "filter": "Filter",
+    "mainInfo": "Main Info",
+    "translations": "Translations",
+    "image": "Image",
+    "imageAfterSave": "Image can be added after saving"
   },
   "home": {
     "title": "Our Menu",

@@ -34,7 +34,11 @@
     "of": "",
     "sortByPrice": "",
     "sortBySort": "",
-    "filter": ""
+    "filter": "",
+    "mainInfo": "",
+    "translations": "",
+    "image": "",
+    "imageAfterSave": ""
   },
   "home": {
     "title": "",
