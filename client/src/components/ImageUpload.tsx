@@ -47,7 +47,14 @@ export function ImageUpload({ entityId, entityType, currentPath, onUploaded }: I
         body: formData,
       });
 
-      if (!res.ok) throw new Error('Upload failed');
+      if (!res.ok) {
+        if (res.status === 401) {
+          localStorage.removeItem('kazan-admin-token');
+          window.location.href = '/admin/login';
+          return;
+        }
+        throw new Error('Upload failed');
+      }
       const data = await res.json() as { imagePath: string };
       onUploaded(data.imagePath);
     } catch {

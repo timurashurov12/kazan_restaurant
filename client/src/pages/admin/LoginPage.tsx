@@ -13,7 +13,13 @@ function LoginPageInner() {
   const [loading, setLoading] = useState(false);
 
   const token = localStorage.getItem('kazan-admin-token');
-  if (token) return <Navigate to="/admin" replace />;
+  if (token) {
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      if (payload.exp * 1000 > Date.now()) return <Navigate to="/admin" replace />;
+    } catch {}
+    localStorage.removeItem('kazan-admin-token');
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

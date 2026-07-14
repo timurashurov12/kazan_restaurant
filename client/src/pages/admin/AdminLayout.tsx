@@ -6,12 +6,24 @@ function getToken(): string | null {
   return localStorage.getItem('kazan-admin-token');
 }
 
+function isTokenValid(token: string): boolean {
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    return payload.exp * 1000 > Date.now();
+  } catch {
+    return false;
+  }
+}
+
 function AdminLayoutInner() {
   const location = useLocation();
   const { t } = useTranslations();
   const token = getToken();
 
-  if (!token) return <Navigate to="/admin/login" replace />;
+  if (!token || !isTokenValid(token)) {
+    localStorage.removeItem('kazan-admin-token');
+    return <Navigate to="/admin/login" replace />;
+  }
 
   const NAV_ITEMS = [
     { path: '/admin/menu-types', label: t('admin.nav.menuTypes'), icon: LayoutGrid },

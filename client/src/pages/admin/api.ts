@@ -11,6 +11,20 @@ export function headers(includeAuth = true): HeadersInit {
   return h;
 }
 
+function handleAuthError() {
+  localStorage.removeItem('kazan-admin-token');
+  window.location.href = '/admin/login';
+}
+
+export async function authFetch(url: string, options: RequestInit = {}): Promise<Response> {
+  const res = await fetch(url, options);
+  if (res.status === 401) {
+    handleAuthError();
+    throw new Error('Unauthorized');
+  }
+  return res;
+}
+
 export async function handleErrorResponse(res: Response): Promise<string> {
   try {
     const json = await res.json();

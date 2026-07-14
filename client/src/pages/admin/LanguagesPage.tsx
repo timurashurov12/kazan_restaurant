@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { Plus, Trash2, Globe, Languages } from 'lucide-react';
-import { API_BASE, headers } from './api';
+import { API_BASE, headers, authFetch } from './api';
 import { translateI18nFile } from '@/lib/api';
 import { useTranslations } from '@/i18n';
 
@@ -16,7 +16,7 @@ export function LanguagesPage() {
   const { data: languages = [], isLoading } = useQuery({
     queryKey: ['admin', 'languages'],
     queryFn: async (): Promise<Language[]> => {
-      const res = await fetch(`${API_BASE}/admin/languages`, { headers: headers() });
+      const res = await authFetch(`${API_BASE}/admin/languages`, { headers: headers() });
       if (!res.ok) return [];
       return res.json();
     },
@@ -24,7 +24,7 @@ export function LanguagesPage() {
 
   const deleteMu = useMutation({
     mutationFn: async (id: string) => {
-      const res = await fetch(`${API_BASE}/admin/languages/${id}`, { method: 'DELETE', headers: headers() });
+      const res = await authFetch(`${API_BASE}/admin/languages/${id}`, { method: 'DELETE', headers: headers() });
       if (!res.ok) throw new Error('Failed');
     },
     onSuccess: () => {
@@ -128,7 +128,7 @@ function CreateModal({ onClose }: { onClose: () => void }) {
     e.preventDefault();
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE}/admin/languages`, {
+      const res = await authFetch(`${API_BASE}/admin/languages`, {
         method: 'POST',
         headers: headers(),
         body: JSON.stringify({ code: code.trim().toLowerCase(), name, sortOrder }),

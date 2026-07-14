@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { Plus, Pencil, Trash2, Languages, ChevronLeft, ChevronRight, Search, ArrowUpDown } from 'lucide-react';
-import { API_BASE, headers } from './api';
+import { API_BASE, headers, authFetch } from './api';
 import { translateCategory } from '@/lib/api';
 import { useTranslations } from '@/i18n';
 import { ImageUpload } from '@/components/ImageUpload';
@@ -42,7 +42,7 @@ export function CategoriesPage() {
   const { data: menuTypesData } = useQuery({
     queryKey: ['admin', 'menu-types'],
     queryFn: async () => {
-      const res = await fetch(`${API_BASE}/admin/menu-types?take=9999`, { headers: headers() });
+      const res = await authFetch(`${API_BASE}/admin/menu-types?take=9999`, { headers: headers() });
       if (!res.ok) return { items: [] as MenuType[] };
       return res.json() as Promise<{ items: MenuType[] }>;
     },
@@ -52,7 +52,7 @@ export function CategoriesPage() {
   const { data: languages = [] } = useQuery({
     queryKey: ['admin', 'languages'],
     queryFn: async (): Promise<Language[]> => {
-      const res = await fetch(`${API_BASE}/languages`, { headers: headers() });
+      const res = await authFetch(`${API_BASE}/languages`, { headers: headers() });
       if (!res.ok) return [];
       return res.json();
     },
@@ -68,7 +68,7 @@ export function CategoriesPage() {
   const { data, isLoading } = useQuery({
     queryKey: ['admin', 'categories', filterMenuTypeId, search, sortOrder, page],
     queryFn: async (): Promise<PaginatedResponse> => {
-      const res = await fetch(`${API_BASE}/admin/categories?${params}`, { headers: headers() });
+      const res = await authFetch(`${API_BASE}/admin/categories?${params}`, { headers: headers() });
       if (!res.ok) return { items: [], total: 0, skip: 0, take: PAGE_SIZE };
       return res.json();
     },
@@ -80,7 +80,7 @@ export function CategoriesPage() {
 
   const deleteMu = useMutation({
     mutationFn: async (id: string) => {
-      const res = await fetch(`${API_BASE}/admin/categories/${id}`, { method: 'DELETE', headers: headers() });
+      const res = await authFetch(`${API_BASE}/admin/categories/${id}`, { method: 'DELETE', headers: headers() });
       if (!res.ok) throw new Error('Failed');
     },
     onSuccess: () => {
@@ -239,7 +239,7 @@ function CreateModal({ menuTypeId, languages, onClose }: { menuTypeId: string; l
     e.preventDefault();
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE}/admin/categories`, {
+      const res = await authFetch(`${API_BASE}/admin/categories`, {
         method: 'POST',
         headers: headers(),
         body: JSON.stringify({ menuTypeId, sortOrder, imagePath, translations }),
@@ -299,7 +299,7 @@ function EditModal({ item, languages, onClose }: { item: CategoryRow; languages:
     e.preventDefault();
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE}/admin/categories/${item.id}`, {
+      const res = await authFetch(`${API_BASE}/admin/categories/${item.id}`, {
         method: 'PUT',
         headers: headers(),
         body: JSON.stringify({ sortOrder, imagePath, translations }),

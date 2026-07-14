@@ -90,12 +90,21 @@ function authHeaders(): Record<string, string> {
   return h;
 }
 
+function checkAuth(res: Response) {
+  if (res.status === 401) {
+    localStorage.removeItem('kazan-admin-token');
+    window.location.href = '/admin/login';
+    throw new Error('Unauthorized');
+  }
+}
+
 export async function translateMenuItem(menuItemId: string) {
   const res = await fetch(`${API_BASE}/admin/translate/menu-item`, {
     method: 'POST',
     headers: authHeaders(),
     body: JSON.stringify({ menuItemId }),
   });
+  checkAuth(res);
   if (!res.ok) throw new Error('Translation failed');
   return res.json() as Promise<{ translated: number; locales: string[] }>;
 }
@@ -106,6 +115,7 @@ export async function translateCategory(categoryId: string) {
     headers: authHeaders(),
     body: JSON.stringify({ categoryId }),
   });
+  checkAuth(res);
   if (!res.ok) throw new Error('Translation failed');
   return res.json() as Promise<{ translated: number; locales: string[] }>;
 }
@@ -116,6 +126,7 @@ export async function translateMenuType(menuTypeId: string) {
     headers: authHeaders(),
     body: JSON.stringify({ menuTypeId }),
   });
+  checkAuth(res);
   if (!res.ok) throw new Error('Translation failed');
   return res.json() as Promise<{ translated: number; locales: string[] }>;
 }
@@ -126,6 +137,7 @@ export async function translateI18nFile(code: string, sourceLocale: string = 'ru
     headers: authHeaders(),
     body: JSON.stringify({ sourceLocale }),
   });
+  checkAuth(res);
   if (!res.ok) throw new Error('Translation failed');
   return res.json() as Promise<{ success: boolean; code: string }>;
 }

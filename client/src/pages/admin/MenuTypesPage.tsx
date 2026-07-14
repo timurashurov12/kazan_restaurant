@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { Plus, Pencil, Trash2, Languages, ChevronLeft, ChevronRight, Search, ArrowUpDown } from 'lucide-react';
-import { API_BASE, headers } from './api';
+import { API_BASE, headers, authFetch } from './api';
 import { translateMenuType } from '@/lib/api';
 import { useTranslations } from '@/i18n';
 import { ImageUpload } from '@/components/ImageUpload';
@@ -47,7 +47,7 @@ export function MenuTypesPage() {
   const { data, isLoading } = useQuery({
     queryKey: ['admin', 'menu-types', search, sortOrder, page],
     queryFn: async (): Promise<PaginatedResponse> => {
-      const res = await fetch(`${API_BASE}/admin/menu-types?${params}`, { headers: headers() });
+      const res = await authFetch(`${API_BASE}/admin/menu-types?${params}`, { headers: headers() });
       if (!res.ok) return { items: [], total: 0, skip: 0, take: PAGE_SIZE };
       return res.json();
     },
@@ -60,7 +60,7 @@ export function MenuTypesPage() {
   const { data: languages = [] } = useQuery({
     queryKey: ['admin', 'languages'],
     queryFn: async (): Promise<Language[]> => {
-      const res = await fetch(`${API_BASE}/languages`, { headers: headers() });
+      const res = await authFetch(`${API_BASE}/languages`, { headers: headers() });
       if (!res.ok) return [];
       return res.json();
     },
@@ -68,7 +68,7 @@ export function MenuTypesPage() {
 
   const deleteMu = useMutation({
     mutationFn: async (id: string) => {
-      const res = await fetch(`${API_BASE}/admin/menu-types/${id}`, { method: 'DELETE', headers: headers() });
+      const res = await authFetch(`${API_BASE}/admin/menu-types/${id}`, { method: 'DELETE', headers: headers() });
       if (!res.ok) throw new Error('Failed');
     },
     onSuccess: () => {
@@ -218,7 +218,7 @@ function CreateModal({ languages, onClose }: { languages: Language[]; onClose: (
     e.preventDefault();
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE}/admin/menu-types`, {
+      const res = await authFetch(`${API_BASE}/admin/menu-types`, {
         method: 'POST',
         headers: headers(),
         body: JSON.stringify({
@@ -283,7 +283,7 @@ function EditModal({ item, languages, onClose }: { item: MenuTypeRow; languages:
     e.preventDefault();
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE}/admin/menu-types/${item.id}`, {
+      const res = await authFetch(`${API_BASE}/admin/menu-types/${item.id}`, {
         method: 'PUT',
         headers: headers(),
         body: JSON.stringify({ code, imagePath, translations }),

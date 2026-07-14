@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { API_BASE, headers } from './api';
+import { API_BASE, headers, authFetch } from './api';
 
 type Settings = {
   siteName: string | null;
@@ -15,7 +15,7 @@ export function SettingsPage() {
   const { data: settings, isLoading } = useQuery({
     queryKey: ['admin', 'settings'],
     queryFn: async (): Promise<Settings> => {
-      const res = await fetch(`${API_BASE}/site-settings`, { headers: headers() });
+      const res = await authFetch(`${API_BASE}/site-settings`, { headers: headers() });
       if (!res.ok) return { siteName: null, footerText: null, contactText: null };
       return res.json();
     },
@@ -35,7 +35,7 @@ export function SettingsPage() {
 
   const updateMu = useMutation({
     mutationFn: async () => {
-      const res = await fetch(`${API_BASE}/site-settings`, {
+      const res = await authFetch(`${API_BASE}/site-settings`, {
         method: 'PUT',
         headers: headers(),
         body: JSON.stringify({ siteName, footerText, contactText }),
