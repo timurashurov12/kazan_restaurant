@@ -19,9 +19,6 @@ WORKDIR /app
 
 COPY server/package.json ./
 RUN npm install --omit=dev && npm install prisma --no-save
-# Force reinstall sharp for Alpine (linuxmusl)
-RUN rm -rf node_modules/sharp node_modules/@img
-RUN npm install --omit=dev --force sharp
 
 COPY --from=builder /app/server/dist ./dist
 COPY --from=builder /app/server/prisma ./prisma
