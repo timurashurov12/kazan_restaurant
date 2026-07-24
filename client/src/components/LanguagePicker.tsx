@@ -3,16 +3,18 @@ import { useTranslations } from '@/i18n';
 import { useQuery } from '@tanstack/react-query';
 import { fetchLanguages } from '@/lib/api';
 import { Globe } from 'lucide-react';
+import { useLocation } from 'react-router-dom';
 
 export function LanguagePicker() {
   const { hasSelected, setLocale } = useLocale();
   const { t } = useTranslations();
+  const { pathname } = useLocation();
   const { data: languages = [] } = useQuery({
     queryKey: ['languages'],
     queryFn: fetchLanguages,
   });
 
-  if (hasSelected || !languages.length) return null;
+  if (hasSelected || !languages.length || pathname.startsWith('/admin')) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ backgroundColor: 'var(--color-app-bg)' }}>
