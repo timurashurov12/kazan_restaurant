@@ -183,17 +183,6 @@ const MENU_TYPES: MenuTypeData[] = [
         ],
       },
       {
-        nameRu: 'Десерты',
-        nameEn: 'Desserts',
-        code: 'desserts',
-        items: [
-          { nameRu: 'Фруктовое ассорти', nameEn: 'Assorted fruit', price: 120000 },
-          { nameRu: 'Крем-брюле', nameEn: 'Crème brûlée', descriptionRu: 'Заварные сливки, карамелизированный сахар, ягоды', descriptionEn: 'Custard cream, caramelised sugar, berries', price: 45000 },
-          { nameRu: 'Щербет', nameEn: 'Sherbet', descriptionRu: 'Заварные сливки, орехи, изюм, печенье, шоколад', descriptionEn: 'Custard cream, nuts, raisins, biscuits, chocolate', price: 60000 },
-          { nameRu: 'Пахлава', nameEn: 'Pahlava', descriptionRu: 'Пахлава из грецкого ореха, изюма, меда и слоеного теста', descriptionEn: 'Pakhlava made from walnuts, raisins, honey and puff pastry', price: 40000 },
-        ],
-      },
-      {
         nameRu: 'Хлебная корзина',
         nameEn: 'Bread Basket',
         code: 'bread-basket',
@@ -244,9 +233,9 @@ const MENU_TYPES: MenuTypeData[] = [
         nameEn: 'Whisky',
         code: 'whisky',
         items: [
-          { nameRu: 'Johnnie Walker Black Label', nameEn: 'Johnnie Walker Black Label', price: 1164000, weightOrVolume: '0.7', prices: { shot: 165000 } },
-          { nameRu: 'Johnnie Walker Red Label', nameEn: 'Johnnie Walker Red Label', price: 789000, weightOrVolume: '0.7', prices: { shot: 112000 } },
-          { nameRu: 'Macallan 12', nameEn: 'Macallan 12', price: 4518000, weightOrVolume: '0.7', prices: { shot: 645000 } },
+          { nameRu: 'Johnnie Walker Black Label', nameEn: 'Johnnie Walker Black Label', price: 1164000, weightOrVolume: '0.7', prices: { shot: 83150 } },
+          { nameRu: 'Johnnie Walker Red Label', nameEn: 'Johnnie Walker Red Label', price: 789000, weightOrVolume: '0.7', prices: { shot: 56400 } },
+          { nameRu: 'Macallan 12', nameEn: 'Macallan 12', price: 4518000, weightOrVolume: '0.7', prices: { shot: 322715 } },
         ],
       },
       {
@@ -254,8 +243,9 @@ const MENU_TYPES: MenuTypeData[] = [
         nameEn: 'Cognac',
         code: 'cognac',
         items: [
-          { nameRu: 'Tanbour 5', nameEn: 'Tanbour 5', price: 500000, weightOrVolume: '0.5', prices: { shot: 100000 } },
-          { nameRu: 'Hennessy', nameEn: 'Hennessy', price: 1425000, weightOrVolume: '0.5', prices: { shot: 285000 } },
+          { nameRu: 'Tanbour 5', nameEn: 'Tanbour 5', price: 500000, weightOrVolume: '0.5', prices: { shot: 50000 } },
+          { nameRu: 'Арак', nameEn: 'Arak', price: 600000, weightOrVolume: '0.5', prices: { shot: 60000 } },
+          { nameRu: 'Hennessy', nameEn: 'Hennessy', price: 1425000, weightOrVolume: '0.5', prices: { shot: 142500 } },
         ],
       },
       {
@@ -263,10 +253,10 @@ const MENU_TYPES: MenuTypeData[] = [
         nameEn: 'Vodka',
         code: 'vodka',
         items: [
-          { nameRu: 'Gold Bukhara', nameEn: 'Gold Bukhara', price: 336000, weightOrVolume: '0.7', prices: { shot: 48000 } },
-          { nameRu: 'Beluga noble', nameEn: 'Beluga noble', price: 1437000, weightOrVolume: '0.5', prices: { shot: 287000 } },
-          { nameRu: 'Stolichnaya', nameEn: 'Stolichnaya', price: 316000, weightOrVolume: '0.5', prices: { shot: 63000 } },
-          { nameRu: 'Stolichnaya Sever', nameEn: 'Stolichnaya Sever', price: 339700, weightOrVolume: '0.5', prices: { shot: 68000 } },
+          { nameRu: 'Gold Bukhara', nameEn: 'Gold Bukhara', price: 336000, weightOrVolume: '0.7', prices: { shot: 24000 } },
+          { nameRu: 'Beluga noble', nameEn: 'Beluga noble', price: 1437000, weightOrVolume: '0.5', prices: { shot: 143700 } },
+          { nameRu: 'Stolichnaya', nameEn: 'Stolichnaya', price: 316000, weightOrVolume: '0.5', prices: { shot: 31500 } },
+          { nameRu: 'Stolichnaya Sever', nameEn: 'Stolichnaya Sever', price: 339700, weightOrVolume: '0.5', prices: { shot: 34000 } },
         ],
       },
       {
@@ -274,19 +264,19 @@ const MENU_TYPES: MenuTypeData[] = [
         nameEn: 'Beer',
         code: 'beer',
         items: [
-          { nameRu: 'Zatecky Gus (пшеничное)', nameEn: 'Zatecky Gus (wheat)', price: 50000, weightOrVolume: '0.5' },
-          { nameRu: 'Sarbast Special (крепкое)', nameEn: 'Sarbast Special (strong)', price: 45000, weightOrVolume: '0.5' },
-          { nameRu: 'Sarbast Original (светлое)', nameEn: 'Sarbast Original (lager)', price: 45000, weightOrVolume: '0.5' },
-          { nameRu: 'Tuborg (светлое)', nameEn: 'Tuborg (lager)', price: 50000, weightOrVolume: '0.5' },
-          { nameRu: 'Hoegaarden (белое)', nameEn: 'Hoegaarden (white)', price: 50000, weightOrVolume: '0.4' },
-          { nameRu: 'Hoegaarden Rosé (розовое)', nameEn: 'Hoegaarden Rosé (rosé)', price: 60000, weightOrVolume: '0.25' },
-          { nameRu: 'Hoegaarden 0.0% (безалкогольное)', nameEn: 'Hoegaarden 0.0% (non-alcoholic)', price: 50000, weightOrVolume: '0.25' },
-          { nameRu: 'Efes (светлое)', nameEn: 'Efes (lager)', price: 50000, weightOrVolume: '0.5' },
-          { nameRu: 'Stella Artois (светлое)', nameEn: 'Stella Artois (lager)', price: 50000, weightOrVolume: '0.4' },
-          { nameRu: 'Stella Artois Zero 0.0% (безалкогольное)', nameEn: 'Stella Artois Zero 0.0% (non-alcoholic)', price: 50000, weightOrVolume: '0.4' },
-          { nameRu: 'Bud (светлое)', nameEn: 'Bud (lager)', price: 50000, weightOrVolume: '0.5' },
-          { nameRu: 'Paulaner Münchner Hell (светлое)', nameEn: 'Paulaner Münchner Hell (lager)', price: 60000, weightOrVolume: '0.5' },
-          { nameRu: 'Paulaner Weissbier (пшеничное)', nameEn: 'Paulaner Weissbier (wheat)', price: 60000, weightOrVolume: '0.5' },
+          { nameRu: 'Zatecky Gus', nameEn: 'Zatecky Gus', descriptionRu: 'Pale Lager / Светлый лагер', descriptionEn: 'Pale Lager', price: 55000, weightOrVolume: '0.5' },
+          { nameRu: 'Sarbast Special', nameEn: 'Sarbast Special', descriptionRu: 'Strong Lager / Крепкий лагер', descriptionEn: 'Strong Lager', price: 49000, weightOrVolume: '0.5' },
+          { nameRu: 'Sarbast Original', nameEn: 'Sarbast Original', descriptionRu: 'Pale Lager / Светлый лагер', descriptionEn: 'Pale Lager', price: 49000, weightOrVolume: '0.5' },
+          { nameRu: 'Sarbast Light', nameEn: 'Sarbast Light', descriptionRu: 'Light Lager / Легкий лагер', descriptionEn: 'Light Lager', price: 49000, weightOrVolume: '0.5' },
+          { nameRu: 'Tuborg', nameEn: 'Tuborg', descriptionRu: 'Pale Lager / Светлый лагер', descriptionEn: 'Pale Lager', price: 55000, weightOrVolume: '0.5' },
+          { nameRu: 'Hoegaarden', nameEn: 'Hoegaarden', descriptionRu: 'Belgian Witbier / Бельгийский витбир', descriptionEn: 'Belgian Witbier', price: 65000, weightOrVolume: '0.44' },
+          { nameRu: 'Hoegaarden Zero', nameEn: 'Hoegaarden Zero', descriptionRu: 'Non-Alcoholic Wheat / Бельгийский витбир б/а', descriptionEn: 'Non-Alcoholic Wheat', price: 50000, weightOrVolume: '0.45' },
+          { nameRu: 'Efes', nameEn: 'Efes', descriptionRu: 'Pilsner / Пилснер', descriptionEn: 'Pilsner', price: 55000, weightOrVolume: '0.5' },
+          { nameRu: 'Stella Artois', nameEn: 'Stella Artois', descriptionRu: 'European Lager / Европейский лагер', descriptionEn: 'European Lager', price: 65000, weightOrVolume: '0.44' },
+          { nameRu: 'Stella Artois Zero', nameEn: 'Stella Artois Zero', descriptionRu: 'Non-Alcoholic Lager / Лагер безалкогольный', descriptionEn: 'Non-Alcoholic Lager', price: 50000, weightOrVolume: '0.45' },
+          { nameRu: 'Bud', nameEn: 'Bud', descriptionRu: 'American Lager / Американский лагер', descriptionEn: 'American Lager', price: 65000, weightOrVolume: '0.44' },
+          { nameRu: 'Paulaner Münchner Hell', nameEn: 'Paulaner Münchner Hell', descriptionRu: 'Munich Helles / Хеллес (мюнхенское светлое)', descriptionEn: 'Munich Helles', price: 90000, weightOrVolume: '0.5' },
+          { nameRu: 'Paulaner Weissbier', nameEn: 'Paulaner Weissbier', descriptionRu: 'German Hefeweizen / Немецкий хефевайцен', descriptionEn: 'German Hefeweizen', price: 90000, weightOrVolume: '0.5' },
         ],
       },
       {
@@ -294,31 +284,11 @@ const MENU_TYPES: MenuTypeData[] = [
         nameEn: 'Snacks to Beer',
         code: 'beer-snacks',
         items: [
-          { nameRu: 'Арахис 50 гр', nameEn: 'Peanuts 50 g', price: 5000, weightOrVolume: '50 г' },
-          { nameRu: 'Соленые орешки 50 гр', nameEn: 'Salted nuts 50 g', price: 5000, weightOrVolume: '50 г' },
-          { nameRu: 'Фисташки 50 гр', nameEn: 'Pistachios 50 g', price: 10000, weightOrVolume: '50 г' },
-        ],
-      },
-      {
-        nameRu: 'Кофе',
-        nameEn: 'Coffee',
-        code: 'coffee',
-        items: [
-          { nameRu: 'Эспрессо', nameEn: 'Espresso', price: 25000, weightOrVolume: '0.06' },
-          { nameRu: 'Американо', nameEn: 'Americano', price: 35000, weightOrVolume: '0.15' },
-          { nameRu: 'Капучино', nameEn: 'Cappuccino', price: 45000, weightOrVolume: '0.2' },
-          { nameRu: 'Латте', nameEn: 'Latte', price: 45000, weightOrVolume: '0.3' },
-          { nameRu: 'Сироп в ассортименте', nameEn: 'Assorted syrups', price: 15000 },
-        ],
-      },
-      {
-        nameRu: 'Чай',
-        nameEn: 'Tea',
-        code: 'tea',
-        items: [
-          { nameRu: 'Чай в ассортименте', nameEn: 'Tea assortment', price: 35000, weightOrVolume: '0.2' },
-          { nameRu: 'Чай с гранатом по-Бухарски', nameEn: 'Bukhara-style herbal tea', price: 40000, weightOrVolume: '0.2' },
-          { nameRu: 'Чай с лимоном и мёдом', nameEn: 'Tea with lemon and honey', price: 45000, weightOrVolume: '0.2' },
+          { nameRu: 'Арахис 50 гр', nameEn: 'Peanuts 50 g', price: 15000, weightOrVolume: '50 г' },
+          { nameRu: 'Солёные косточки 50 гр', nameEn: 'Salted nuts 50 g', price: 20000, weightOrVolume: '50 г' },
+          { nameRu: 'Фисташки 50 гр', nameEn: 'Pistachios 50 g', price: 25000, weightOrVolume: '50 г' },
+          { nameRu: 'Сырные шарики', nameEn: 'Cheese Balls', price: 60000 },
+          { nameRu: 'Сырные палочки с остринкой', nameEn: 'Spicy Cheese Sticks', price: 65000 },
         ],
       },
       {
@@ -326,10 +296,28 @@ const MENU_TYPES: MenuTypeData[] = [
         nameEn: 'Cool Drinks',
         code: 'cool-drinks',
         items: [
-          { nameRu: 'Соки в ассортименте', nameEn: 'Assorted juices', price: 9000, weightOrVolume: '0.2' },
-          { nameRu: 'Вода Б/Газ', nameEn: 'Still water', price: 5000, weightOrVolume: '0.7' },
+          { nameRu: 'Соки в ассортименте', nameEn: 'Assorted juices', price: 9000, weightOrVolume: '0.2', prices: { large: 45000 } },
+          { nameRu: 'Вода Б/Газ', nameEn: 'Still water', price: 50000, weightOrVolume: '0.7' },
           { nameRu: 'Coca-Cola, Fanta, Sprite', nameEn: 'Coca-Cola, Fanta, Sprite', price: 16000, weightOrVolume: '0.2' },
           { nameRu: 'Боржоми', nameEn: 'Borjomi', price: 35000, weightOrVolume: '0.5' },
+        ],
+      },
+    ],
+  },
+  {
+    nameRu: 'Десерты и напитки',
+    nameEn: 'Desserts & Drinks',
+    code: 'desserts-drinks',
+    categories: [
+      {
+        nameRu: 'Десерты',
+        nameEn: 'Desserts',
+        code: 'desserts',
+        items: [
+          { nameRu: 'Фруктовое ассорти', nameEn: 'Assorted fruit', price: 120000 },
+          { nameRu: 'Крем-брюле', nameEn: 'Crème brûlée', descriptionRu: 'Заварные сливки, карамелизированный сахар, ягоды', descriptionEn: 'Custard cream, caramelised sugar, berries', price: 45000 },
+          { nameRu: 'Щербет', nameEn: 'Sherbet', descriptionRu: 'Заварные сливки, орехи, изюм, печенье, шоколад', descriptionEn: 'Custard cream, nuts, raisins, biscuits, chocolate', price: 60000 },
+          { nameRu: 'Пахлава', nameEn: 'Pahlava', descriptionRu: 'Пахлава из грецкого ореха, изюма, меда и слоеного теста', descriptionEn: 'Pakhlava made from walnuts, raisins, honey and puff pastry', price: 40000 },
         ],
       },
       {
@@ -337,12 +325,13 @@ const MENU_TYPES: MenuTypeData[] = [
         nameEn: 'Ice Cream',
         code: 'ice-cream',
         items: [
-          { nameRu: 'Шоколадное', nameEn: 'Chocolate', price: 55000, weightOrVolume: '150 г' },
-          { nameRu: 'Ванильное', nameEn: 'Vanilla', price: 55000, weightOrVolume: '150 г' },
-          { nameRu: 'Брусника', nameEn: 'Lingonberry', price: 55000, weightOrVolume: '150 г' },
-          { nameRu: 'Клубничное', nameEn: 'Strawberry', price: 55000, weightOrVolume: '150 г' },
-          { nameRu: 'Фисташковое', nameEn: 'Pistachio', price: 55000, weightOrVolume: '150 г' },
-          { nameRu: 'Манго', nameEn: 'Mango', price: 55000, weightOrVolume: '150 г' },
+          { nameRu: 'Тирамису', nameEn: 'Tiramisu', price: 49000, weightOrVolume: '150 г' },
+          { nameRu: 'Шоколад', nameEn: 'Chocolate', price: 49000, weightOrVolume: '150 г' },
+          { nameRu: 'Белый шоколад', nameEn: 'White Chocolate', price: 49000, weightOrVolume: '150 г' },
+          { nameRu: 'Пломбир', nameEn: 'Vanilla', price: 49000, weightOrVolume: '150 г' },
+          { nameRu: 'Пломбир-Вишня', nameEn: 'Vanilla & Cherry', price: 49000, weightOrVolume: '150 г' },
+          { nameRu: 'Фисташки', nameEn: 'Pistachio', price: 49000, weightOrVolume: '150 г' },
+          { nameRu: 'Кофе Амаретто', nameEn: 'Amaretto Coffee', price: 49000, weightOrVolume: '150 г' },
         ],
       },
       {
@@ -357,12 +346,63 @@ const MENU_TYPES: MenuTypeData[] = [
           { nameRu: 'Фруктовое ассорти', nameEn: 'Assorted fruits', price: 130000, weightOrVolume: '1.2 кг' },
         ],
       },
+      {
+        nameRu: 'Кофе',
+        nameEn: 'Coffee',
+        code: 'coffee',
+        items: [
+          { nameRu: 'Эспрессо', nameEn: 'Espresso', price: 25000, weightOrVolume: '0.06' },
+          { nameRu: 'Американо', nameEn: 'Americano', price: 35000, weightOrVolume: '0.12' },
+          { nameRu: 'Капучино', nameEn: 'Cappuccino', price: 45000, weightOrVolume: '0.2', prices: { large: 50000 } },
+          { nameRu: 'Латте', nameEn: 'Latte', price: 45000, weightOrVolume: '0.3' },
+          { nameRu: 'Сироп в ассортименте', nameEn: 'Assorted syrups', price: 15000 },
+        ],
+      },
+      {
+        nameRu: 'Чай',
+        nameEn: 'Tea',
+        code: 'tea',
+        items: [
+          { nameRu: 'Чай в ассортименте', nameEn: 'Tea assortment', descriptionRu: 'Черный, зеленый, с жасмином, с мятой', descriptionEn: 'black, green, jasmine, mint', price: 35000, weightOrVolume: '0.9' },
+          { nameRu: 'Чай с травами по-Бухарски', nameEn: 'Bukhara-style herbal tea', price: 40000, weightOrVolume: '0.9' },
+          { nameRu: 'Чай с лимоном и мёдом', nameEn: 'Tea with lemon and honey', price: 45000, weightOrVolume: '0.9' },
+        ],
+      },
+      {
+        nameRu: 'Лимонады',
+        nameEn: 'Lemonades',
+        code: 'lemonades',
+        items: [
+          { nameRu: 'Персик / Мята', nameEn: 'Peach / Mint', descriptionRu: 'Персик, сироп, свежая мята, лимон', descriptionEn: 'Peach, sugar syrup, fresh mint, lemon', price: 100000 },
+          { nameRu: 'Грейпфрут / Розмарин', nameEn: 'Grapefruit / Rosemary', descriptionRu: 'Грейпфрут, сироп, розмарин', descriptionEn: 'Grapefruit, sugar syrup, rosemary', price: 100000 },
+          { nameRu: 'Манго / Маракуйя', nameEn: 'Mango / Passion Fruit', descriptionRu: 'Сироп манго, сироп маракуйи, лёд', descriptionEn: 'Mango syrup, passion fruit syrup, ice', price: 120000 },
+          { nameRu: 'Имбирь / Персик', nameEn: 'Ginger / Peach', descriptionRu: 'Персик, имбирь, лимонный сок, сироп, мята', descriptionEn: 'Peach, ginger, lemon juice, sugar syrup, mint', price: 100000 },
+          { nameRu: 'Классический Мохито', nameEn: 'Classic Mojito', descriptionRu: 'Лайм, лимон, мята, сироп', descriptionEn: 'Lime, lemon, mint, sugar syrup', price: 100000 },
+          { nameRu: 'Тропический Базилик', nameEn: 'Tropical Basil', descriptionRu: 'Базилик, сироп манго, сироп маракуйи, лимон, лёд', descriptionEn: 'Basil, mango syrup, passion fruit syrup, lemon, ice', price: 120000 },
+          { nameRu: 'Юдзу', nameEn: 'Yuzu', descriptionRu: 'Лимон, сироп юдзу, мята, лёд', descriptionEn: 'Lemon, yuzu syrup, mint, ice', price: 100000 },
+          { nameRu: 'Солёная Груша', nameEn: 'Salted Pear', descriptionRu: 'Сироп груши, сироп ананаса, соль, цедра апельсина, лимон', descriptionEn: 'Pear syrup, pineapple syrup, salt, orange zest, lemon', price: 100000 },
+        ],
+      },
     ],
   },
 ];
 
 async function main() {
   console.log('Seeding menu with correct structure...');
+
+  // Clean existing menu data for re-seeding
+  console.log('  Cleaning existing menu data...');
+  await prisma.menuItemTranslation.deleteMany();
+  await prisma.menuItem.deleteMany();
+  await prisma.categoryTranslation.deleteMany();
+  await prisma.category.deleteMany();
+  await prisma.menuTypeTranslation.deleteMany();
+  await prisma.menuType.deleteMany();
+  await prisma.wineClassificationTranslation.deleteMany();
+  await prisma.wineClassification.deleteMany();
+  await prisma.regionTranslation.deleteMany();
+  await prisma.region.deleteMany();
+  console.log('  Cleanup done.');
 
   // Seed regions
   const regionMap: Record<string, string> = {};
