@@ -33,3 +33,23 @@ body {
 .animate-in {
   animation: animate-in 0.3s ease-out;
 }
+
+select {
+  background-image: none;
+}
+
+select option {
+  background-color: var(--color-app-panel);
+  color: var(--color-app-text, #e7e5e4);
+  padding: 0.5rem 1rem;
+}
+
+select option:checked {
+  background-color: var(--color-app-accent);
+  color: var(--color-app-bg);
+}
+
+select:focus option:checked {
+  background-color: var(--color-app-accent);
+  color: var(--color-app-bg);
+}

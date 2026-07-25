@@ -2,8 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { ArrowLeft, Image as ImageIcon, Settings, Languages, Tag, CircleDollarSign } from 'lucide-react';
-import Select from 'react-select';
+import { ArrowLeft, Image as ImageIcon, Settings, Languages, Tag, CircleDollarSign, ChevronDown, X } from 'lucide-react';
 import { API_BASE, headers, authFetch } from './api';
 import { useTranslations } from '@/i18n';
 import { ImageUpload } from '@/components/ImageUpload';
@@ -49,15 +48,15 @@ export function MenuItemFormPage() {
   const [loading, setLoading] = useState(false);
   const [createdId, setCreatedId] = useState<string | null>(null);
 
-  const { data: categories = [] } = useQuery({
+  const { data: categoriesData } = useQuery({
     queryKey: ['admin', 'categories'],
-    queryFn: async (): Promise<Category[]> => {
+    queryFn: async (): Promise<{ items: Category[] }> => {
       const res = await authFetch(`${API_BASE}/admin/categories?take=9999`, { headers: headers() });
-      if (!res.ok) return [];
-      const data = await res.json() as { items: Category[] };
-      return data.items;
+      if (!res.ok) return { items: [] };
+      return res.json();
     },
   });
+  const categories = categoriesData?.items ?? [];
 
   const { data: languages = [] } = useQuery({
     queryKey: ['admin', 'languages'],
@@ -187,17 +186,18 @@ export function MenuItemFormPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="sm:col-span-2">
                   <label className="block text-sm font-medium text-stone-400 mb-1">{t('admin.categories.title')}</label>
-                  <Select<{ value: string; label: string }>
-                    value={categories.find((c) => c.id === categoryId) ? { value: categoryId, label: categories.find((c) => c.id === categoryId)?.translations?.find((tr) => tr.locale === 'ru')?.name || categoryId } : null}
-                    onChange={(opt) => opt && setCategoryId(opt.value)}
-                    options={categories.map((c) => ({
-                      value: c.id,
-                      label: c.translations?.find((tr) => tr.locale === 'ru')?.name || c.id,
-                    }))}
-                    placeholder={t('common.all')}
-                    isSearchable
-                    styles={selectStyles}
-                  />
+                  <div className="relative">
+                    <select
+                      value={categoryId}
+                      onChange={(e) => setCategoryId(e.target.value)}
+                      className="w-full px-4 py-2 pr-10 rounded-lg bg-[var(--color-app-bg)] border border-[var(--color-border)] text-stone-100 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-app-accent)]/40 appearance-none"
+                    >
+                      {categories.map((c) => (
+                        <option key={c.id} value={c.id}>{c.translations?.find((tr) => tr.locale === 'ru')?.name || c.id}</option>
+                      ))}
+                    </select>
+                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400 pointer-events-none" />
+                  </div>
                 </div>
                 <Field label={t('common.price')} value={price} onChange={setPrice} required />
                 <Field label={t('common.weight')} value={weight} onChange={setWeight} placeholder={t('admin.menuItems.weightPlaceholder')} />
@@ -206,35 +206,47 @@ export function MenuItemFormPage() {
                 {/* Region */}
                 <div className="sm:col-span-2">
                   <label className="block text-sm font-medium text-stone-400 mb-1">Регион</label>
-                  <Select<{ value: string; label: string }>
-                    value={regions.find((r) => r.id === regionId) ? { value: regionId!, label: regions.find((r) => r.id === regionId)?.translations?.find((tr) => tr.locale === 'ru')?.name || regionId! } : null}
-                    onChange={(opt) => setRegionId(opt?.value || null)}
-                    options={regions.map((r) => ({
-                      value: r.id,
-                      label: r.translations?.find((tr) => tr.locale === 'ru')?.name || r.id,
-                    }))}
-                    placeholder="Без региона"
-                    isSearchable
-                    isClearable
-                    styles={selectStyles}
-                  />
+                  <div className="relative">
+                    <select
+                      value={regionId || ''}
+                      onChange={(e) => setRegionId(e.target.value || null)}
+                      className="w-full px-4 py-2 pr-10 rounded-lg bg-[var(--color-app-bg)] border border-[var(--color-border)] text-stone-100 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-app-accent)]/40 appearance-none"
+                    >
+                      <option value="">Без региона</option>
+                      {regions.map((r) => (
+                        <option key={r.id} value={r.id}>{r.translations?.find((tr) => tr.locale === 'ru')?.name || r.id}</option>
+                      ))}
+                    </select>
+                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400 pointer-events-none" />
+                    {regionId && (
+                      <button type="button" onClick={() => setRegionId(null)} className="absolute right-8 top-1/2 -translate-y-1/2 p-0.5 text-stone-400 hover:text-stone-200">
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                  </div>
                 </div>
 
                 {/* Wine Classification */}
                 <div className="sm:col-span-2">
                   <label className="block text-sm font-medium text-stone-400 mb-1">Классификация вина</label>
-                  <Select<{ value: string; label: string }>
-                    value={classifications.find((c) => c.id === classificationId) ? { value: classificationId!, label: classifications.find((c) => c.id === classificationId)?.translations?.find((tr) => tr.locale === 'ru')?.name || classificationId! } : null}
-                    onChange={(opt) => setClassificationId(opt?.value || null)}
-                    options={classifications.map((c) => ({
-                      value: c.id,
-                      label: c.translations?.find((tr) => tr.locale === 'ru')?.name || c.code,
-                    }))}
-                    placeholder="Без классификации"
-                    isSearchable
-                    isClearable
-                    styles={selectStyles}
-                  />
+                  <div className="relative">
+                    <select
+                      value={classificationId || ''}
+                      onChange={(e) => setClassificationId(e.target.value || null)}
+                      className="w-full px-4 py-2 pr-10 rounded-lg bg-[var(--color-app-bg)] border border-[var(--color-border)] text-stone-100 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-app-accent)]/40 appearance-none"
+                    >
+                      <option value="">Без классификации</option>
+                      {classifications.map((c) => (
+                        <option key={c.id} value={c.id}>{c.translations?.find((tr) => tr.locale === 'ru')?.name || c.code}</option>
+                      ))}
+                    </select>
+                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400 pointer-events-none" />
+                    {classificationId && (
+                      <button type="button" onClick={() => setClassificationId(null)} className="absolute right-8 top-1/2 -translate-y-1/2 p-0.5 text-stone-400 hover:text-stone-200">
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
             </FormSection>
@@ -316,46 +328,4 @@ function Field({ label, value, onChange, required, placeholder }: { label: strin
   );
 }
 
-const selectStyles = {
-  control: (base: Record<string, unknown>, state: { isFocused: boolean }) => ({
-    ...base,
-    backgroundColor: 'var(--color-app-bg)',
-    borderColor: state.isFocused ? 'var(--color-app-accent)' : 'var(--color-border)',
-    borderRadius: '0.5rem',
-    padding: '0.125rem 0',
-    boxShadow: state.isFocused ? '0 0 0 2px rgba(211,174,110,0.25)' : 'none',
-    '&:hover': { borderColor: 'var(--color-app-accent)' },
-  }),
-  menu: (base: Record<string, unknown>) => ({
-    ...base,
-    backgroundColor: 'var(--color-app-panel)',
-    border: '1px solid var(--color-border)',
-    borderRadius: '0.5rem',
-    overflow: 'hidden',
-  }),
-  option: (base: Record<string, unknown>, state: { isFocused: boolean; isSelected: boolean }) => ({
-    ...base,
-    backgroundColor: state.isSelected ? 'var(--color-app-accent)' : state.isFocused ? 'rgba(255,255,255,0.05)' : 'transparent',
-    color: state.isSelected ? 'var(--color-app-bg)' : 'var(--color-app-text, #e7e5e4)',
-    cursor: 'pointer',
-    padding: '0.5rem 1rem',
-  }),
-  singleValue: (base: Record<string, unknown>) => ({
-    ...base,
-    color: '#e7e5e4',
-  }),
-  input: (base: Record<string, unknown>) => ({
-    ...base,
-    color: '#e7e5e4',
-  }),
-  placeholder: (base: Record<string, unknown>) => ({
-    ...base,
-    color: '#78716c',
-  }),
-  indicatorSeparator: () => ({ display: 'none' }),
-  dropdownIndicator: (base: Record<string, unknown>) => ({
-    ...base,
-    color: '#78716c',
-    '&:hover': { color: '#a8a29e' },
-  }),
-};
+

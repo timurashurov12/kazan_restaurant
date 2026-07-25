@@ -1,6 +1,7 @@
 import { Outlet, Navigate, Link, useLocation } from 'react-router-dom';
 import { LogOut, LayoutGrid, List, Package, Globe, Settings, MapPin, Wine } from 'lucide-react';
 import { I18nProvider, useTranslations } from '@/i18n';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 function getToken(): string | null {
   return localStorage.getItem('kazan-admin-token');
@@ -79,7 +80,9 @@ function AdminLayoutInner() {
         </div>
       </aside>
       <main className="flex-1 overflow-auto p-6">
-        <Outlet />
+        <ErrorBoundary>
+          <Outlet />
+        </ErrorBoundary>
       </main>
     </div>
   );
