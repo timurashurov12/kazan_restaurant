@@ -619,6 +619,28 @@ async function main() {
 
       console.log(`  ${catData.nameRu}: ${catData.items.length} items`);
     }
+
+    // Deactivate categories that no longer exist in seed data for this menuType
+    const existingCategories = await prisma.category.findMany({
+      where: { menuTypeId: menuType.id, isActive: true },
+      include: { translations: { where: { locale: 'ru' } } },
+    });
+    const processedCategoryNames = new Set(mtData.categories.map(c => c.nameRu));
+    let totalCategoriesDeactivated = 0;
+    for (const cat of existingCategories) {
+      const catNameRu = cat.translations[0]?.name;
+      if (catNameRu && !processedCategoryNames.has(catNameRu)) {
+        await prisma.category.update({
+          where: { id: cat.id },
+          data: { isActive: false },
+        });
+        console.log(`  DEACTIVATED CATEGORY: ${catNameRu}`);
+        totalCategoriesDeactivated++;
+      }
+    }
+    if (totalCategoriesDeactivated > 0) {
+      console.log(`  (${totalCategoriesDeactivated} categories deactivated for ${mtData.nameRu})`);
+    }
   }
 
   console.log(`\n=== Migration complete ===`);
