@@ -2,7 +2,7 @@ import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useLocale } from '@/context/LocaleContext';
 import { useTranslations } from '@/i18n';
-import { fetchCategoryItems, publicUploadUrl, type MenuItemDto } from '@/lib/api';
+import { fetchCategories, fetchCategoryItems, publicUploadUrl, type MenuItemDto } from '@/lib/api';
 import { useState, useMemo, useEffect } from 'react';
 import { ChefHat, Search, ArrowLeft, X, Leaf, Star } from 'lucide-react';
 
@@ -58,6 +58,14 @@ export function MenuPage() {
     enabled: !!categoryId,
   });
 
+  const { data: categories } = useQuery({
+    queryKey: ['categories', menuTypeId, locale],
+    queryFn: () => fetchCategories(menuTypeId!, locale),
+    enabled: !!menuTypeId,
+  });
+
+  const currentCategory = categories?.find((c) => c.id === categoryId);
+
   const filteredItems = useMemo(
     () => (items ? filterItemsBySearch(items, searchQuery) : []),
     [items, searchQuery]
@@ -110,6 +118,10 @@ export function MenuPage() {
             {t('common.backToCategories')}
           </Link>
         </div>
+
+        {currentCategory && (
+          <h1 className="text-2xl font-bold text-stone-50 mb-6">{currentCategory.name}</h1>
+        )}
 
         {isEmpty ? (
           <p className="text-stone-400 text-center py-12">{t('common.emptySection')}</p>
