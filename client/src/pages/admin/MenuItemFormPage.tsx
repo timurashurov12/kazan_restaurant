@@ -2,22 +2,30 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { ArrowLeft, Image as ImageIcon, Settings, Languages } from 'lucide-react';
+import { ArrowLeft, Image as ImageIcon, Settings, Languages, Tag, CircleDollarSign } from 'lucide-react';
 import Select from 'react-select';
 import { API_BASE, headers, authFetch } from './api';
 import { useTranslations } from '@/i18n';
 import { ImageUpload } from '@/components/ImageUpload';
 import { LanguageTabs } from '@/components/LanguageTabs';
+import { BadgePicker } from '@/components/BadgePicker';
+import { PricesEditor } from '@/components/PricesEditor';
 
 type Category = { id: string; translations: { locale: string; name: string }[] };
 type Language = { code: string; name: string };
+type Region = { id: string; translations: { locale: string; name: string }[] };
+type WineClassification = { id: string; code: string; translations: { locale: string; name: string }[] };
 type MenuItemRow = {
   id: string;
   categoryId: string;
   price: number;
+  prices: Record<string, number> | null;
+  badges: string[] | null;
   weightOrVolume?: string | null;
   sortOrder: number;
   imagePath?: string | null;
+  regionId?: string | null;
+  classificationId?: string | null;
   translations: { locale: string; name: string; description?: string | null }[];
 };
 
@@ -30,9 +38,13 @@ export function MenuItemFormPage() {
 
   const [categoryId, setCategoryId] = useState('');
   const [price, setPrice] = useState('');
+  const [prices, setPrices] = useState<Record<string, number> | null>(null);
+  const [badges, setBadges] = useState<string[]>([]);
   const [weight, setWeight] = useState('');
   const [sortOrder, setSortOrder] = useState(0);
   const [imagePath, setImagePath] = useState<string | null>(null);
+  const [regionId, setRegionId] = useState<string | null>(null);
+  const [classificationId, setClassificationId] = useState<string | null>(null);
   const [translations, setTranslations] = useState<{ locale: string; name: string; description?: string | null }[]>([]);
   const [loading, setLoading] = useState(false);
   const [createdId, setCreatedId] = useState<string | null>(null);
@@ -56,6 +68,24 @@ export function MenuItemFormPage() {
     },
   });
 
+  const { data: regions = [] } = useQuery({
+    queryKey: ['admin', 'regions'],
+    queryFn: async (): Promise<Region[]> => {
+      const res = await authFetch(`${API_BASE}/admin/regions`, { headers: headers() });
+      if (!res.ok) return [];
+      return res.json();
+    },
+  });
+
+  const { data: classifications = [] } = useQuery({
+    queryKey: ['admin', 'wine-classifications'],
+    queryFn: async (): Promise<WineClassification[]> => {
+      const res = await authFetch(`${API_BASE}/admin/wine-classifications`, { headers: headers() });
+      if (!res.ok) return [];
+      return res.json();
+    },
+  });
+
   const { data: item, isLoading: itemLoading } = useQuery({
     queryKey: ['admin', 'menu-item', id],
     queryFn: async (): Promise<MenuItemRow | null> => {
@@ -71,9 +101,13 @@ export function MenuItemFormPage() {
     if (item) {
       setCategoryId(item.categoryId);
       setPrice(String(item.price));
+      setPrices(item.prices || null);
+      setBadges(item.badges || []);
       setWeight(item.weightOrVolume || '');
       setSortOrder(item.sortOrder);
       setImagePath(item.imagePath || null);
+      setRegionId(item.regionId || null);
+      setClassificationId(item.classificationId || null);
       setTranslations(item.translations.map((tr) => ({ ...tr })));
     }
   }, [item]);
@@ -88,11 +122,23 @@ export function MenuItemFormPage() {
     e.preventDefault();
     setLoading(true);
     try {
+      const body = {
+        categoryId,
+        price: Number(price),
+        prices,
+        badges: badges.length > 0 ? badges : null,
+        weightOrVolume: weight || null,
+        sortOrder,
+        imagePath,
+        regionId: regionId || null,
+        classificationId: classificationId || null,
+        translations,
+      };
       if (isEdit && id) {
         const res = await authFetch(`${API_BASE}/admin/menu-items/${id}`, {
           method: 'PUT',
           headers: headers(),
-          body: JSON.stringify({ categoryId, price: Number(price), weightOrVolume: weight || null, sortOrder, imagePath, translations }),
+          body: JSON.stringify(body),
         });
         if (!res.ok) throw new Error('Failed');
         queryClient.invalidateQueries({ queryKey: ['admin', 'menu-items'] });
@@ -101,7 +147,7 @@ export function MenuItemFormPage() {
         const res = await authFetch(`${API_BASE}/admin/menu-items`, {
           method: 'POST',
           headers: headers(),
-          body: JSON.stringify({ categoryId, price: Number(price), weightOrVolume: weight || undefined, sortOrder, imagePath, translations }),
+          body: JSON.stringify(body),
         });
         if (!res.ok) throw new Error('Failed');
         const created = await res.json() as { id: string };
@@ -156,7 +202,51 @@ export function MenuItemFormPage() {
                 <Field label={t('common.price')} value={price} onChange={setPrice} required />
                 <Field label={t('common.weight')} value={weight} onChange={setWeight} placeholder={t('admin.menuItems.weightPlaceholder')} />
                 <Field label={t('common.sort')} value={String(sortOrder)} onChange={(v) => setSortOrder(Number(v) || 0)} />
+
+                {/* Region */}
+                <div className="sm:col-span-2">
+                  <label className="block text-sm font-medium text-stone-400 mb-1">Регион</label>
+                  <Select<{ value: string; label: string }>
+                    value={regions.find((r) => r.id === regionId) ? { value: regionId!, label: regions.find((r) => r.id === regionId)?.translations?.find((tr) => tr.locale === 'ru')?.name || regionId! } : null}
+                    onChange={(opt) => setRegionId(opt?.value || null)}
+                    options={regions.map((r) => ({
+                      value: r.id,
+                      label: r.translations?.find((tr) => tr.locale === 'ru')?.name || r.id,
+                    }))}
+                    placeholder="Без региона"
+                    isSearchable
+                    isClearable
+                    styles={selectStyles}
+                  />
+                </div>
+
+                {/* Wine Classification */}
+                <div className="sm:col-span-2">
+                  <label className="block text-sm font-medium text-stone-400 mb-1">Классификация вина</label>
+                  <Select<{ value: string; label: string }>
+                    value={classifications.find((c) => c.id === classificationId) ? { value: classificationId!, label: classifications.find((c) => c.id === classificationId)?.translations?.find((tr) => tr.locale === 'ru')?.name || classificationId! } : null}
+                    onChange={(opt) => setClassificationId(opt?.value || null)}
+                    options={classifications.map((c) => ({
+                      value: c.id,
+                      label: c.translations?.find((tr) => tr.locale === 'ru')?.name || c.code,
+                    }))}
+                    placeholder="Без классификации"
+                    isSearchable
+                    isClearable
+                    styles={selectStyles}
+                  />
+                </div>
               </div>
+            </FormSection>
+
+            {/* Section: Additional Prices */}
+            <FormSection icon={CircleDollarSign} title="Доп. цены (бокал, стопка)">
+              <PricesEditor value={prices} onChange={setPrices} />
+            </FormSection>
+
+            {/* Section: Badges */}
+            <FormSection icon={Tag} title="Бейджи">
+              <BadgePicker value={badges} onChange={setBadges} />
             </FormSection>
 
             {/* Section: Translations */}

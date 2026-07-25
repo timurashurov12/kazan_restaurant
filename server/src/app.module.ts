@@ -8,6 +8,8 @@ import { MenusModule } from './menus/menus.module';
 import { MenuTypesModule } from './menu-types/menu-types.module';
 import { CategoriesModule } from './categories/categories.module';
 import { MenuItemsModule } from './menu-items/menu-items.module';
+import { RegionsModule } from './regions/regions.module';
+import { WineClassificationsModule } from './wine-classifications/wine-classifications.module';
 import { LanguagesModule } from './languages/languages.module';
 import { PublicMenuModule } from './public-menu/public-menu.module';
 import { TranslateModule } from './translate/translate.module';
@@ -36,6 +38,8 @@ const envFilePath = envCandidates.find((p) => existsSync(p));
     MenuTypesModule,
     CategoriesModule,
     MenuItemsModule,
+    RegionsModule,
+    WineClassificationsModule,
     PublicMenuModule,
     TranslateModule,
     SiteSettingsModule,

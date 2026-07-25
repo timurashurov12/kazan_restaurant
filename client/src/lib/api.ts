@@ -39,8 +39,12 @@ export type MenuItemDto = {
   name: string;
   description: string | null;
   price: number;
+  prices: Record<string, number> | null;
+  badges: string[] | null;
   weightOrVolume: string | null;
   imagePath: string | null;
+  region: { id: string; name: string } | null;
+  classification: { id: string; name: string; code: string } | null;
 };
 
 export type CategoryDto = {

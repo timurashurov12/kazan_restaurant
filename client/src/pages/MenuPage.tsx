@@ -4,7 +4,33 @@ import { useLocale } from '@/context/LocaleContext';
 import { useTranslations } from '@/i18n';
 import { fetchCategoryItems, publicUploadUrl, type MenuItemDto } from '@/lib/api';
 import { useState, useMemo, useEffect } from 'react';
-import { ChefHat, Search, ArrowLeft, X } from 'lucide-react';
+import { ChefHat, Search, ArrowLeft, X, Leaf, Star } from 'lucide-react';
+
+const BADGE_ICONS: Record<string, { icon: React.ComponentType<{ className?: string }>; color: string; bg: string; label: string }> = {
+  vegetarian: { icon: Leaf, color: 'text-emerald-400', bg: 'bg-emerald-500/15', label: 'Vegetarian' },
+  top: { icon: Star, color: 'text-amber-400', bg: 'bg-amber-500/15', label: 'Top' },
+};
+
+const PRICE_LABELS: Record<string, Record<string, string>> = {
+  glass: { ru: 'Бокал', en: 'Glass' },
+  shot: { ru: 'Стопка', en: 'Shot' },
+  cup: { ru: 'Кружка', en: 'Cup' },
+};
+
+const REGION_FLAGS: Record<string, string> = {
+  'Кахетия': '🇬🇪', 'Kakheti': '🇬🇪',
+  'Имерети': '🇬🇪', 'Imereti': '🇬🇪',
+  'Бордо': '🇫🇷', 'Bordeaux': '🇫🇷',
+  'Бургундия': '🇫🇷', 'Burgundy': '🇫🇷',
+  'Тоскана': '🇮🇹', 'Tuscany': '🇮🇹',
+  'Риоха': '🇪🇸', 'Rioja': '🇪🇸',
+  'Маргарет-Ривер': '🇦🇺', 'Margaret River': '🇦🇺',
+  'Узбекистан': '🇺🇿', 'Uzbekistan': '🇺🇿',
+};
+
+function getRegionFlag(regionName: string): string {
+  return REGION_FLAGS[regionName] || '';
+}
 
 function matchSearch(text: string | null, query: string): boolean {
   if (!text) return false;
@@ -123,19 +149,54 @@ export function MenuPage() {
                       </div>
                       <div className="flex min-w-0 flex-1 flex-col justify-between gap-3 py-0.5">
                         <div className="min-w-0 space-y-1">
-                          <h3 className="text-sm font-semibold text-stone-50">{item.name}</h3>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <h3 className="text-sm font-semibold text-stone-50">{item.name}</h3>
+                            {item.badges?.map((badge) => {
+                              const cfg = BADGE_ICONS[badge];
+                              if (!cfg) return null;
+                              const Icon = cfg.icon;
+                              return (
+                                <span key={badge} className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-medium ${cfg.bg} ${cfg.color}`}>
+                                  <Icon className="w-2.5 h-2.5" />
+                                </span>
+                              );
+                            })}
+                          </div>
+                          {item.classification && (
+                            <span className="inline-block text-[10px] font-medium uppercase tracking-wider text-stone-500 bg-stone-800/60 px-1.5 py-0.5 rounded">
+                              {item.classification.name}
+                            </span>
+                          )}
                           {item.description && (
                             <p className="line-clamp-2 text-xs text-stone-400">{item.description}</p>
                           )}
-                          {item.weightOrVolume && (
-                            <p className="text-[11px] font-medium uppercase tracking-[0.12em] text-stone-500">
-                              {item.weightOrVolume}
-                            </p>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            {item.weightOrVolume && (
+                              <p className="text-[11px] font-medium uppercase tracking-[0.12em] text-stone-500">
+                                {item.weightOrVolume}
+                              </p>
+                            )}
+                            {item.region && (
+                              <p className="text-[11px] text-stone-500">
+                                {getRegionFlag(item.region.name)} {item.region.name}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                        <div className="space-y-1">
+                          <span className="text-lg font-semibold tabular-nums text-[var(--color-app-accent)]">
+                            {Number(item.price).toLocaleString(numberLocale)} {t('common.currency')}
+                          </span>
+                          {item.prices && Object.keys(item.prices).length > 0 && (
+                            <div className="flex flex-wrap gap-x-3 gap-y-0.5">
+                              {Object.entries(item.prices).map(([key, val]) => (
+                                <span key={key} className="text-xs text-stone-500">
+                                  {PRICE_LABELS[key]?.[locale === 'en' ? 'en' : 'ru'] || key}: {Number(val).toLocaleString(numberLocale)}
+                                </span>
+                              ))}
+                            </div>
                           )}
                         </div>
-                        <span className="text-lg font-semibold tabular-nums text-[var(--color-app-accent)]">
-                          {Number(item.price).toLocaleString(numberLocale)} {t('common.currency')}
-                        </span>
                       </div>
                     </li>
                   );
@@ -151,13 +212,13 @@ export function MenuPage() {
       </div>
 
       {selectedItem && (
-        <ItemModal item={selectedItem} onClose={() => setSelectedItem(null)} numberLocale={numberLocale} currencyLabel={t('common.currency')} />
+        <ItemModal item={selectedItem} onClose={() => setSelectedItem(null)} numberLocale={numberLocale} currencyLabel={t('common.currency')} locale={locale} />
       )}
     </div>
   );
 }
 
-function ItemModal({ item, onClose, numberLocale, currencyLabel }: { item: MenuItemDto; onClose: () => void; numberLocale: string; currencyLabel: string }) {
+function ItemModal({ item, onClose, numberLocale, currencyLabel, locale }: { item: MenuItemDto; onClose: () => void; numberLocale: string; currencyLabel: string; locale: string }) {
   const img = publicUploadUrl(item.imagePath);
 
   return (
@@ -191,9 +252,30 @@ function ItemModal({ item, onClose, numberLocale, currencyLabel }: { item: MenuI
           )}
 
           <div>
-            <h2 className="text-xl font-semibold text-stone-50">{item.name}</h2>
+            <div className="flex items-center gap-2 flex-wrap">
+              <h2 className="text-xl font-semibold text-stone-50">{item.name}</h2>
+              {item.badges?.map((badge) => {
+                const cfg = BADGE_ICONS[badge];
+                if (!cfg) return null;
+                const Icon = cfg.icon;
+                return (
+                  <span key={badge} className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium ${cfg.bg} ${cfg.color}`}>
+                    <Icon className="w-3 h-3" />
+                    {cfg.label}
+                  </span>
+                );
+              })}
+            </div>
+            {item.classification && (
+              <span className="inline-block mt-1 text-xs font-medium uppercase tracking-wider text-stone-500 bg-stone-800/60 px-2 py-0.5 rounded">
+                {item.classification.name}
+              </span>
+            )}
             {item.weightOrVolume && (
               <p className="mt-1 text-sm text-stone-500 uppercase tracking-wide">{item.weightOrVolume}</p>
+            )}
+            {item.region && (
+              <p className="mt-1 text-xs text-stone-500">{getRegionFlag(item.region.name)} {item.region.name}</p>
             )}
           </div>
 
@@ -201,10 +283,20 @@ function ItemModal({ item, onClose, numberLocale, currencyLabel }: { item: MenuI
             <p className="text-sm text-stone-400 leading-relaxed">{item.description}</p>
           )}
 
-          <div className="pt-2 border-t border-[var(--color-border)]">
+          <div className="pt-2 border-t border-[var(--color-border)] space-y-2">
             <span className="text-2xl font-bold tabular-nums text-[var(--color-app-accent)]">
               {Number(item.price).toLocaleString(numberLocale)} {currencyLabel}
             </span>
+            {item.prices && Object.keys(item.prices).length > 0 && (
+              <div className="space-y-1">
+                {Object.entries(item.prices).map(([key, val]) => (
+                  <div key={key} className="flex justify-between text-sm">
+                    <span className="text-stone-400">{PRICE_LABELS[key]?.[locale === 'en' ? 'en' : 'ru'] || key}</span>
+                    <span className="font-medium text-stone-200 tabular-nums">{Number(val).toLocaleString(numberLocale)} {currencyLabel}</span>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>

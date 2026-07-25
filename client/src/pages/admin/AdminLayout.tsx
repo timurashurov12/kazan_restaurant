@@ -1,5 +1,5 @@
 import { Outlet, Navigate, Link, useLocation } from 'react-router-dom';
-import { LogOut, LayoutGrid, List, Package, Globe, Settings } from 'lucide-react';
+import { LogOut, LayoutGrid, List, Package, Globe, Settings, MapPin, Wine } from 'lucide-react';
 import { I18nProvider, useTranslations } from '@/i18n';
 
 function getToken(): string | null {
@@ -30,6 +30,8 @@ function AdminLayoutInner() {
     { path: '/admin/categories', label: t('admin.nav.categories'), icon: List },
     { path: '/admin/menu-items', label: t('admin.nav.menuItems'), icon: Package },
     { path: '/admin/languages', label: t('admin.nav.languages'), icon: Globe },
+    { path: '/admin/regions', label: 'Регионы', icon: MapPin },
+    { path: '/admin/wine-classifications', label: 'Классификация вин', icon: Wine },
     { path: '/admin/settings', label: t('admin.nav.settings'), icon: Settings },
   ];
 

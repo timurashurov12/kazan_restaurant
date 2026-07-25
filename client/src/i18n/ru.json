@@ -84,6 +84,8 @@
       "categories": "Категории",
       "menuItems": "Блюда",
       "languages": "Языки",
+      "regions": "Регионы",
+      "wineClassifications": "Классификация вин",
       "settings": "Настройки",
       "logout": "Выйти"
     },

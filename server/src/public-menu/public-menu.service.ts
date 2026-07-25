@@ -14,8 +14,12 @@ export type MenuItemPublicDto = {
   name: string;
   description: string | null;
   price: number;
+  prices: Record<string, number> | null;
+  badges: string[] | null;
   weightOrVolume: string | null;
   imagePath: string | null;
+  region: { id: string; name: string } | null;
+  classification: { id: string; name: string; code: string } | null;
 };
 
 export type MenuCategoryPublicDto = {
@@ -111,7 +115,11 @@ export class PublicMenuService {
         menuItems: {
           where: { isActive: true },
           orderBy: { sortOrder: 'asc' },
-          include: { translations: true },
+          include: {
+            translations: true,
+            region: { include: { translations: true } },
+            classification: { include: { translations: true } },
+          },
         },
       },
     });
@@ -128,13 +136,25 @@ export class PublicMenuService {
           const itemTr =
             item.translations.find((r) => r.locale === locale) ||
             item.translations[0];
+          const regionTr = item.region
+            ? item.region.translations.find((r) => r.locale === locale) || item.region.translations[0]
+            : null;
+          const classificationTr = item.classification
+            ? item.classification.translations.find((r) => r.locale === locale) || item.classification.translations[0]
+            : null;
           return {
             id: item.id,
             name: itemTr?.name ?? '',
             description: itemTr?.description ?? null,
             price: Number(item.price),
+            prices: item.prices as Record<string, number> | null,
+            badges: item.badges as string[] | null,
             weightOrVolume: item.weightOrVolume,
             imagePath: item.imagePath ?? null,
+            region: item.region ? { id: item.region.id, name: regionTr?.name ?? '' } : null,
+            classification: item.classification
+              ? { id: item.classification.id, name: classificationTr?.name ?? '', code: item.classification.code }
+              : null,
           };
         }),
       };
@@ -209,19 +229,35 @@ export class PublicMenuService {
     const items = await this.prisma.menuItem.findMany({
       where: { categoryId, isActive: true },
       orderBy: { sortOrder: 'asc' },
-      include: { translations: true },
+      include: {
+        translations: true,
+        region: { include: { translations: true } },
+        classification: { include: { translations: true } },
+      },
     });
 
     const result = items.map((item) => {
       const itemTr =
         item.translations.find((r) => r.locale === locale) || item.translations[0];
+      const regionTr = item.region
+        ? item.region.translations.find((r) => r.locale === locale) || item.region.translations[0]
+        : null;
+      const classificationTr = item.classification
+        ? item.classification.translations.find((r) => r.locale === locale) || item.classification.translations[0]
+        : null;
       return {
         id: item.id,
         name: itemTr?.name ?? '',
         description: itemTr?.description ?? null,
         price: Number(item.price),
+        prices: item.prices as Record<string, number> | null,
+        badges: item.badges as string[] | null,
         weightOrVolume: item.weightOrVolume,
         imagePath: item.imagePath ?? null,
+        region: item.region ? { id: item.region.id, name: regionTr?.name ?? '' } : null,
+        classification: item.classification
+          ? { id: item.classification.id, name: classificationTr?.name ?? '', code: item.classification.code }
+          : null,
       };
     });
 

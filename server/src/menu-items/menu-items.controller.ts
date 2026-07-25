@@ -66,9 +66,13 @@ export class MenuItemsController {
     body: {
       categoryId: string;
       price: number;
+      prices?: any;
+      badges?: any;
       weightOrVolume?: string;
       sortOrder?: number;
       imagePath?: string;
+      regionId?: string;
+      classificationId?: string;
       translations: {
         locale: string;
         name: string;
@@ -87,10 +91,14 @@ export class MenuItemsController {
     body: {
       categoryId?: string;
       price?: number;
+      prices?: any;
+      badges?: any;
       weightOrVolume?: string;
       sortOrder?: number;
       isActive?: boolean;
       imagePath?: string | null;
+      regionId?: string | null;
+      classificationId?: string | null;
       translations?: {
         locale: string;
         name: string;

@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Prisma } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
@@ -8,7 +8,11 @@ interface MenuItemData {
   descriptionRu?: string;
   descriptionEn?: string;
   price: number;
+  prices?: Record<string, number>;
+  badges?: string[];
   weightOrVolume?: string;
+  regionCode?: string;
+  classificationCode?: string;
 }
 
 interface CategoryData {
@@ -25,6 +29,28 @@ interface MenuTypeData {
   categories: CategoryData[];
 }
 
+const REGIONS = [
+  { code: 'kakheti', nameRu: 'Кахетия', nameEn: 'Kakheti' },
+  { code: 'imereti', nameRu: 'Имерети', nameEn: 'Imereti' },
+  { code: 'bordeaux', nameRu: 'Бордо', nameEn: 'Bordeaux' },
+  { code: 'burgundy', nameRu: 'Бургундия', nameEn: 'Burgundy' },
+  { code: 'tuscany', nameRu: 'Тоскана', nameEn: 'Tuscany' },
+  { code: 'rioja', nameRu: 'Риоха', nameEn: 'Rioja' },
+  { code: 'margaret-river', nameRu: 'Маргарет-Ривер', nameEn: 'Margaret River' },
+  { code: 'uzbekistan', nameRu: 'Узбекистан', nameEn: 'Uzbekistan' },
+];
+
+const CLASSIFICATIONS = [
+  { code: 'dry', nameRu: 'Сухое', nameEn: 'Dry' },
+  { code: 'semi-dry', nameRu: 'Полусухое', nameEn: 'Semi-dry' },
+  { code: 'semi-sweet', nameRu: 'Полусладкое', nameEn: 'Semi-sweet' },
+  { code: 'sweet', nameRu: 'Сладкое', nameEn: 'Sweet' },
+  { code: 'red', nameRu: 'Красное', nameEn: 'Red' },
+  { code: 'white', nameRu: 'Белое', nameEn: 'White' },
+  { code: 'rose', nameRu: 'Розовое', nameEn: 'Rosé' },
+  { code: 'sparkling', nameRu: 'Игристое', nameEn: 'Sparkling' },
+];
+
 const MENU_TYPES: MenuTypeData[] = [
   {
     nameRu: 'Основное меню',
@@ -37,13 +63,13 @@ const MENU_TYPES: MenuTypeData[] = [
         code: 'cold-appetisers',
         items: [
           { nameRu: 'Бабагануш', nameEn: 'Babaganoush', descriptionRu: 'Запеченные баклажаны, тахини, лимонный сок, оливковое масло, чеснок', descriptionEn: 'Baked aubergines, tahini, lemon juice, olive oil, garlic', price: 45000 },
-          { nameRu: 'Хумус', nameEn: 'Hummus', descriptionRu: 'Горох нут, кунжутная паста, сок лимона, оливковое масло, соль, специи', descriptionEn: 'Chickpeas, sesame paste, lemon juice, olive oil, salt, spices', price: 45000 },
-          { nameRu: 'Сырное ассорти', nameEn: 'Cheese platter', descriptionRu: 'Дорблю, маасдам, пармезан, сливочный сыр, орехи, виноград, мёд', descriptionEn: 'Dorblu, Maasdam, Parmesan, cream cheese, nuts, grapes, honey', price: 200000 },
+          { nameRu: 'Хумус', nameEn: 'Hummus', descriptionRu: 'Горох нут, кунжутная паста, сок лимона, оливковое масло, соль, специи', descriptionEn: 'Chickpeas, sesame paste, lemon juice, olive oil, salt, spices', price: 45000, badges: ['vegetarian'] },
+          { nameRu: 'Сырное ассорти', nameEn: 'Cheese platter', descriptionRu: 'Дорблю, маасдам, пармезан, сливочный сыр, орехи, виноград, мёд', descriptionEn: 'Dorblu, Maasdam, Parmesan, cream cheese, nuts, grapes, honey', price: 200000, badges: ['top'] },
           { nameRu: 'Витело-тонато', nameEn: 'Vitello tonnato', descriptionRu: 'Тонко нарезанная телятина или язык говяжий, соус на основе тунца, майонеза и лимонного сока со специями. Идеально подходит к вину', descriptionEn: 'Thinly sliced veal or beef tongue, tuna-based sauce, mayonnaise and lemon juice with spices. Perfect with wine.', price: 85000 },
           { nameRu: 'Мясная нарезка', nameEn: 'Cold cuts', descriptionRu: 'Казы, копченая думба, язык отварной говяжий, бастурма из конины', descriptionEn: 'Kazy, smoked dumba, boiled beef tongue, horse meat basturma', price: 220000 },
           { nameRu: 'Сузма (чакка)', nameEn: 'Suzma (Chakka yogurt)', descriptionRu: 'Кисломолочный продукт', descriptionEn: 'Sour milk product', price: 25000 },
           { nameRu: 'Паштет куриный с айвой', nameEn: 'Chicken pâté with quince', descriptionRu: 'Печень куриная, масло сливочное, сливки, соль, специи. Подается с вареньем из айвы', descriptionEn: 'Chicken liver, butter, cream, salt, spices. Served with quince jam.', price: 55000 },
-          { nameRu: 'Свежие овощи с зеленью', nameEn: 'Fresh vegetables with greens', descriptionRu: 'Помидоры, огурцы, зелень в ассортименте', descriptionEn: 'Tomatoes, cucumbers, assorted greens', price: 90000 },
+          { nameRu: 'Свежие овощи с зеленью', nameEn: 'Fresh vegetables with greens', descriptionRu: 'Помидоры, огурцы, зелень в ассортименте', descriptionEn: 'Tomatoes, cucumbers, assorted greens', price: 90000, badges: ['vegetarian'] },
           { nameRu: 'Соленья', nameEn: 'Pickles', descriptionRu: 'Помидоры, огурцы корнишоны, бейби кукуруза, капуста', descriptionEn: 'Tomatoes, gherkins, baby corn, cabbage', price: 95000 },
           { nameRu: 'Лимон 100 гр', nameEn: 'Lemon 100 g', price: 15000, weightOrVolume: '100 г' },
         ],
@@ -55,8 +81,8 @@ const MENU_TYPES: MenuTypeData[] = [
         items: [
           { nameRu: 'Чучвара жареная с зеленью', nameEn: 'Fried chuchvara with herbs', descriptionRu: 'Жареные пельмени, с начинкой из букета зелени, специй. Подается с соусом', descriptionEn: 'Fried dumplings stuffed with a bouquet of herbs and spices. Served with sauce', price: 45000 },
           { nameRu: 'Самса с мясом', nameEn: 'Samsa with meat', descriptionRu: 'Тонкое слоеное тесто, мясо телятины, лук, специи', descriptionEn: 'Thin puff pastry, veal, onions, spices', price: 18000 },
-          { nameRu: 'Самса с зеленью', nameEn: 'Samsa with greens', descriptionRu: 'Нежное слоеное тесто с букетом зелени, сливочное масло', descriptionEn: 'Delicate puff pastry with a bouquet of greens, cream butter', price: 16000 },
-          { nameRu: 'Самса с тыквой', nameEn: 'Samsa with pumpkin', descriptionRu: 'Тонкое слоеное тесто, тыква с добавлением лука, специи, сливочное масло', descriptionEn: 'Thin puff pastry, pumpkin with added onion, spices, butter', price: 16000 },
+          { nameRu: 'Самса с зеленью', nameEn: 'Samsa with greens', descriptionRu: 'Нежное слоеное тесто с букетом зелени, сливочное масло', descriptionEn: 'Delicate puff pastry with a bouquet of greens, cream butter', price: 16000, badges: ['vegetarian'] },
+          { nameRu: 'Самса с тыквой', nameEn: 'Samsa with pumpkin', descriptionRu: 'Тонкое слоеное тесто, тыква с добавлением лука, специи, сливочное масло', descriptionEn: 'Thin puff pastry, pumpkin with added onion, spices, butter', price: 16000, badges: ['vegetarian'] },
           { nameRu: 'Самбуса с мясом', nameEn: 'Sambusa with meat', descriptionRu: 'Тонкое воздушное тесто, рубленое мясо обжаренное в масле. Подается с соусом', descriptionEn: 'Thin, airy dough, minced meat fried in oil. Served with sauce.', price: 55000 },
           { nameRu: 'Самбуса с тыквой', nameEn: 'Sambusa with pumpkin', descriptionRu: 'Тонкое воздушное тесто, тыква, с добавлением лука специи обжареное в масле. Подается с соусом', descriptionEn: 'Thin airy dough, pumpkin, with the addition of onions and spices fried in oil. Served with sauce.', price: 45000 },
         ],
@@ -104,7 +130,7 @@ const MENU_TYPES: MenuTypeData[] = [
           { nameRu: 'Каурма лагман', nameEn: 'Kaurma lagman', descriptionRu: 'Сытное блюдо из обжаренного мяса с овощами, специями, лапши ручной работы подается с яйцом', descriptionEn: 'A hearty dish of fried meat with vegetables, spices, and handmade noodles served with an egg.', price: 65000 },
           { nameRu: 'Мясоед (ребро говяжье) 100гр', nameEn: 'Meat eater (beef rib) 100 gr', descriptionRu: 'Томленое ребро говядины, приготовленное по особому рецепту. Подается с картофелем', descriptionEn: 'Braised beef ribs, prepared according to a special recipe. Served with potatoes.', price: 45000, weightOrVolume: '100 г' },
           { nameRu: 'Долма', nameEn: 'Dolma', descriptionRu: 'Молодые листья винограда, фаршированные мясом телятины и риса', descriptionEn: 'Young grape leaves, stuffed with veal and rice', price: 65000 },
-          { nameRu: 'Долма из грибов', nameEn: 'Mushroom dolma', descriptionRu: 'Молодые листья винограда, фаршированные грибами вешенками. Подаются с соусом. Рекомендуем вегетарианцам', descriptionEn: 'Young grape leaves, stuffed with oyster mushrooms. Served with sauce. Recommended for vegetarians.', price: 60000 },
+          { nameRu: 'Долма из грибов', nameEn: 'Mushroom dolma', descriptionRu: 'Молодые листья винограда, фаршированные грибами вешенками. Подаются с соусом. Рекомендуем вегетарианцам', descriptionEn: 'Young grape leaves, stuffed with oyster mushrooms. Served with sauce. Recommended for vegetarians.', price: 60000, badges: ['vegetarian', 'top'] },
           { nameRu: 'Судак по-Бухарски', nameEn: 'Pike perch Bukhara style', descriptionRu: 'Обжаренное в панировки филе судака. Подается с томатным соусом из узбекских специй', descriptionEn: 'Fried pike-perch fillet in breadcrumbs. Served with tomato sauce made with Uzbek spices.', price: 95000 },
           { nameRu: 'Еда кочевника', nameEn: "Nomad's food", descriptionRu: 'Блюдо из рубленого мяса конины и баранины, завёрнутое в тонкое тесто ручной лепки, подаётся с особым густым соусом и каймаком', descriptionEn: 'A dish made from minced horse and lamb meat, wrapped in thin handmade dough, served with a special thick sauce and kaymak.', price: 75000 },
           { nameRu: 'Котлета по-Киевски', nameEn: 'Kiev-style cutlet', descriptionRu: 'Нежное филе цыпленка с начинкой из сливочного масла со специями и зеленью обжаренного в панировке. Подается с картофелем пюре и сыром пармизан', descriptionEn: 'Tender chicken fillet stuffed with cream butter with spices and herbs fried in breadcrumbs. Served with mashed potatoes and Parmesan cheese.', price: 67000 },
@@ -188,29 +214,29 @@ const MENU_TYPES: MenuTypeData[] = [
         nameEn: 'Wine',
         code: 'wine',
         items: [
-          { nameRu: 'Cabernet Sauvignon (красное сухое)', nameEn: 'Cabernet Sauvignon (red dry)', price: 550000, weightOrVolume: '0.75' },
-          { nameRu: 'Rundweiss (белое сухое)', nameEn: 'Rundweiss (white dry)', price: 450000, weightOrVolume: '0.75' },
-          { nameRu: 'Bagizagan «Bella Ozkhidea» (красное сухое)', nameEn: 'Bagizagan «Bella Ozkhidea» (red dry)', price: 250000, weightOrVolume: '0.75' },
-          { nameRu: 'Bagizagan «Bella Lilia» (белое сухое)', nameEn: 'Bagizagan «Bella Lilia» (white dry)', price: 250000, weightOrVolume: '0.75' },
-          { nameRu: 'Bagizagan Select (красное сухое)', nameEn: 'Bagizagan Select (red dry)', price: 300000, weightOrVolume: '0.75' },
-          { nameRu: 'Bagizagan Samarkand (красное сухое)', nameEn: 'Bagizagan Samarkand (red dry)', price: 375000, weightOrVolume: '0.75' },
-          { nameRu: 'Bagizagan Peri (красное сухое)', nameEn: 'Bagizagan Peri (red dry)', price: 450000, weightOrVolume: '0.75' },
-          { nameRu: 'Alazani Valley (белое полусладкое)', nameEn: 'Alazani Valley (white med. sweet)', price: 500000, weightOrVolume: '0.75' },
-          { nameRu: 'Mouton Cadet Blanc (белое сухое)', nameEn: 'Mouton Cadet Blanc (white dry)', price: 756000, weightOrVolume: '0.75' },
-          { nameRu: 'Mouton Cadet Rouge (красное сухое)', nameEn: 'Mouton Cadet Rouge (red dry)', price: 756000, weightOrVolume: '0.75' },
-          { nameRu: 'Piccini Pinot Grigio delle Venezie (белое сухое)', nameEn: 'Piccini Pinot Grigio delle Venezie (white dry)', price: 700000, weightOrVolume: '0.75' },
-          { nameRu: 'Pirosmani (красное полу-сухое)', nameEn: 'Pirosmani (red med. dry)', price: 500000, weightOrVolume: '0.75' },
-          { nameRu: 'Piccini Prosecco Extra Dry (игристое белое сухое)', nameEn: 'Piccini Prosecco Extra Dry (sparkling white dry)', price: 800000, weightOrVolume: '0.75' },
-          { nameRu: 'Khvanchkara (красное полусладкое)', nameEn: 'Khvanchkara (red med. sweet)', price: 1040000, weightOrVolume: '0.75' },
-          { nameRu: 'Tsinandali (белое сухое)', nameEn: 'Tsinandali (white dry)', price: 500000, weightOrVolume: '0.75' },
-          { nameRu: 'J.P. Chenet Medium Sweet Blanc (белое полусладкое)', nameEn: 'J.P. Chenet Medium Sweet Blanc (white med. sweet)', price: 640000, weightOrVolume: '0.75' },
-          { nameRu: 'J.P. Chenet Medium Sweet Rouge (красное полусладкое)', nameEn: 'J.P. Chenet Medium Sweet Rouge (red med. sweet)', price: 640000, weightOrVolume: '0.75' },
-          { nameRu: 'Peri Cabernet Sauvignon (красное сухое)', nameEn: 'Peri Cabernet Sauvignon (red dry)', price: 450000, weightOrVolume: '0.75' },
-          { nameRu: 'Peri Bagizagan (красное сухое)', nameEn: 'Peri Bagizagan (red dry)', price: 450000, weightOrVolume: '0.75' },
-          { nameRu: 'Peri Riesling (белое сухое)', nameEn: 'Peri Riesling (white dry)', price: 450000, weightOrVolume: '0.75' },
-          { nameRu: 'Nuara Uzumfermer (красное сухое)', nameEn: 'Nuara Uzumfermer (red dry)', price: 500000, weightOrVolume: '0.75' },
-          { nameRu: 'Bagizagan Salute Sparkling Brut', nameEn: 'Bagizagan Salute Sparkling Brut', price: 370000, weightOrVolume: '0.75' },
-          { nameRu: 'Bagizagan Salute Sparkling Brut Rosé', nameEn: 'Bagizagan Salute Sparkling Brut Rosé', price: 370000, weightOrVolume: '0.75' },
+          { nameRu: 'Cabernet Sauvignon (красное сухое)', nameEn: 'Cabernet Sauvignon (red dry)', price: 550000, weightOrVolume: '0.75', classificationCode: 'dry', regionCode: 'uzbekistan', prices: { glass: 110000 } },
+          { nameRu: 'Rundweiss (белое сухое)', nameEn: 'Rundweiss (white dry)', price: 450000, weightOrVolume: '0.75', classificationCode: 'dry', regionCode: 'uzbekistan', prices: { glass: 90000 } },
+          { nameRu: 'Bagizagan «Bella Ozkhidea» (красное сухое)', nameEn: 'Bagizagan «Bella Ozkhidea» (red dry)', price: 250000, weightOrVolume: '0.75', classificationCode: 'dry', regionCode: 'uzbekistan', prices: { glass: 50000 } },
+          { nameRu: 'Bagizagan «Bella Lilia» (белое сухое)', nameEn: 'Bagizagan «Bella Lilia» (white dry)', price: 250000, weightOrVolume: '0.75', classificationCode: 'dry', regionCode: 'uzbekistan', prices: { glass: 50000 } },
+          { nameRu: 'Bagizagan Select (красное сухое)', nameEn: 'Bagizagan Select (red dry)', price: 300000, weightOrVolume: '0.75', classificationCode: 'dry', regionCode: 'uzbekistan', prices: { glass: 60000 } },
+          { nameRu: 'Bagizagan Samarkand (красное сухое)', nameEn: 'Bagizagan Samarkand (red dry)', price: 375000, weightOrVolume: '0.75', classificationCode: 'dry', regionCode: 'uzbekistan', prices: { glass: 75000 } },
+          { nameRu: 'Bagizagan Peri (красное сухое)', nameEn: 'Bagizagan Peri (red dry)', price: 450000, weightOrVolume: '0.75', classificationCode: 'dry', regionCode: 'uzbekistan', prices: { glass: 90000 } },
+          { nameRu: 'Alazani Valley (белое полусладкое)', nameEn: 'Alazani Valley (white med. sweet)', price: 500000, weightOrVolume: '0.75', classificationCode: 'semi-sweet', regionCode: 'kakheti', prices: { glass: 100000 } },
+          { nameRu: 'Mouton Cadet Blanc (белое сухое)', nameEn: 'Mouton Cadet Blanc (white dry)', price: 756000, weightOrVolume: '0.75', classificationCode: 'dry', regionCode: 'bordeaux', prices: { glass: 150000 } },
+          { nameRu: 'Mouton Cadet Rouge (красное сухое)', nameEn: 'Mouton Cadet Rouge (red dry)', price: 756000, weightOrVolume: '0.75', classificationCode: 'dry', regionCode: 'bordeaux', prices: { glass: 150000 } },
+          { nameRu: 'Piccini Pinot Grigio delle Venezie (белое сухое)', nameEn: 'Piccini Pinot Grigio delle Venezie (white dry)', price: 700000, weightOrVolume: '0.75', classificationCode: 'dry', regionCode: 'tuscany', prices: { glass: 140000 } },
+          { nameRu: 'Pirosmani (красное полу-сухое)', nameEn: 'Pirosmani (red med. dry)', price: 500000, weightOrVolume: '0.75', classificationCode: 'semi-dry', regionCode: 'kakheti', prices: { glass: 100000 } },
+          { nameRu: 'Piccini Prosecco Extra Dry (игристое белое сухое)', nameEn: 'Piccini Prosecco Extra Dry (sparkling white dry)', price: 800000, weightOrVolume: '0.75', classificationCode: 'sparkling', regionCode: 'tuscany', prices: { glass: 160000 } },
+          { nameRu: 'Khvanchkara (красное полусладкое)', nameEn: 'Khvanchkara (red med. sweet)', price: 1040000, weightOrVolume: '0.75', classificationCode: 'semi-sweet', regionCode: 'imereti', prices: { glass: 200000 } },
+          { nameRu: 'Tsinandali (белое сухое)', nameEn: 'Tsinandali (white dry)', price: 500000, weightOrVolume: '0.75', classificationCode: 'dry', regionCode: 'kakheti', prices: { glass: 100000 } },
+          { nameRu: 'J.P. Chenet Medium Sweet Blanc (белое полусладкое)', nameEn: 'J.P. Chenet Medium Sweet Blanc (white med. sweet)', price: 640000, weightOrVolume: '0.75', classificationCode: 'semi-sweet', regionCode: 'bordeaux', prices: { glass: 128000 } },
+          { nameRu: 'J.P. Chenet Medium Sweet Rouge (красное полусладкое)', nameEn: 'J.P. Chenet Medium Sweet Rouge (red med. sweet)', price: 640000, weightOrVolume: '0.75', classificationCode: 'semi-sweet', regionCode: 'bordeaux', prices: { glass: 128000 } },
+          { nameRu: 'Peri Cabernet Sauvignon (красное сухое)', nameEn: 'Peri Cabernet Sauvignon (red dry)', price: 450000, weightOrVolume: '0.75', classificationCode: 'dry', regionCode: 'uzbekistan', prices: { glass: 90000 } },
+          { nameRu: 'Peri Bagizagan (красное сухое)', nameEn: 'Peri Bagizagan (red dry)', price: 450000, weightOrVolume: '0.75', classificationCode: 'dry', regionCode: 'uzbekistan', prices: { glass: 90000 } },
+          { nameRu: 'Peri Riesling (белое сухое)', nameEn: 'Peri Riesling (white dry)', price: 450000, weightOrVolume: '0.75', classificationCode: 'dry', regionCode: 'uzbekistan', prices: { glass: 90000 } },
+          { nameRu: 'Nuara Uzumfermer (красное сухое)', nameEn: 'Nuara Uzumfermer (red dry)', price: 500000, weightOrVolume: '0.75', classificationCode: 'dry', regionCode: 'uzbekistan', prices: { glass: 100000 } },
+          { nameRu: 'Bagizagan Salute Sparkling Brut', nameEn: 'Bagizagan Salute Sparkling Brut', price: 370000, weightOrVolume: '0.75', classificationCode: 'sparkling', regionCode: 'uzbekistan', prices: { glass: 75000 } },
+          { nameRu: 'Bagizagan Salute Sparkling Brut Rosé', nameEn: 'Bagizagan Salute Sparkling Brut Rosé', price: 370000, weightOrVolume: '0.75', classificationCode: 'sparkling', regionCode: 'uzbekistan', prices: { glass: 75000 } },
         ],
       },
       {
@@ -218,9 +244,9 @@ const MENU_TYPES: MenuTypeData[] = [
         nameEn: 'Whisky',
         code: 'whisky',
         items: [
-          { nameRu: 'Johnnie Walker Black Label', nameEn: 'Johnnie Walker Black Label', price: 1164000, weightOrVolume: '0.7' },
-          { nameRu: 'Johnnie Walker Red Label', nameEn: 'Johnnie Walker Red Label', price: 789000, weightOrVolume: '0.7' },
-          { nameRu: 'Macallan 12', nameEn: 'Macallan 12', price: 4518000, weightOrVolume: '0.7' },
+          { nameRu: 'Johnnie Walker Black Label', nameEn: 'Johnnie Walker Black Label', price: 1164000, weightOrVolume: '0.7', prices: { shot: 165000 } },
+          { nameRu: 'Johnnie Walker Red Label', nameEn: 'Johnnie Walker Red Label', price: 789000, weightOrVolume: '0.7', prices: { shot: 112000 } },
+          { nameRu: 'Macallan 12', nameEn: 'Macallan 12', price: 4518000, weightOrVolume: '0.7', prices: { shot: 645000 } },
         ],
       },
       {
@@ -228,8 +254,8 @@ const MENU_TYPES: MenuTypeData[] = [
         nameEn: 'Cognac',
         code: 'cognac',
         items: [
-          { nameRu: 'Tanbour 5', nameEn: 'Tanbour 5', price: 500000, weightOrVolume: '0.5' },
-          { nameRu: 'Hennessy', nameEn: 'Hennessy', price: 1425000, weightOrVolume: '0.5' },
+          { nameRu: 'Tanbour 5', nameEn: 'Tanbour 5', price: 500000, weightOrVolume: '0.5', prices: { shot: 100000 } },
+          { nameRu: 'Hennessy', nameEn: 'Hennessy', price: 1425000, weightOrVolume: '0.5', prices: { shot: 285000 } },
         ],
       },
       {
@@ -237,10 +263,10 @@ const MENU_TYPES: MenuTypeData[] = [
         nameEn: 'Vodka',
         code: 'vodka',
         items: [
-          { nameRu: 'Gold Bukhara', nameEn: 'Gold Bukhara', price: 336000, weightOrVolume: '0.7' },
-          { nameRu: 'Beluga noble', nameEn: 'Beluga noble', price: 1437000, weightOrVolume: '0.5' },
-          { nameRu: 'Stolichnaya', nameEn: 'Stolichnaya', price: 316000, weightOrVolume: '0.5' },
-          { nameRu: 'Stolichnaya Sever', nameEn: 'Stolichnaya Sever', price: 339700, weightOrVolume: '0.5' },
+          { nameRu: 'Gold Bukhara', nameEn: 'Gold Bukhara', price: 336000, weightOrVolume: '0.7', prices: { shot: 48000 } },
+          { nameRu: 'Beluga noble', nameEn: 'Beluga noble', price: 1437000, weightOrVolume: '0.5', prices: { shot: 287000 } },
+          { nameRu: 'Stolichnaya', nameEn: 'Stolichnaya', price: 316000, weightOrVolume: '0.5', prices: { shot: 63000 } },
+          { nameRu: 'Stolichnaya Sever', nameEn: 'Stolichnaya Sever', price: 339700, weightOrVolume: '0.5', prices: { shot: 68000 } },
         ],
       },
       {
@@ -338,6 +364,43 @@ const MENU_TYPES: MenuTypeData[] = [
 async function main() {
   console.log('Seeding menu with correct structure...');
 
+  // Seed regions
+  const regionMap: Record<string, string> = {};
+  for (const r of REGIONS) {
+    const region = await prisma.region.create({
+      data: {
+        sortOrder: REGIONS.indexOf(r),
+        translations: {
+          create: [
+            { locale: 'ru', name: r.nameRu },
+            { locale: 'en', name: r.nameEn },
+          ],
+        },
+      },
+    });
+    regionMap[r.code] = region.id;
+  }
+  console.log(`  Regions: ${REGIONS.length} created`);
+
+  // Seed wine classifications
+  const classificationMap: Record<string, string> = {};
+  for (const c of CLASSIFICATIONS) {
+    const cls = await prisma.wineClassification.create({
+      data: {
+        code: c.code,
+        sortOrder: CLASSIFICATIONS.indexOf(c),
+        translations: {
+          create: [
+            { locale: 'ru', name: c.nameRu },
+            { locale: 'en', name: c.nameEn },
+          ],
+        },
+      },
+    });
+    classificationMap[c.code] = cls.id;
+  }
+  console.log(`  Wine Classifications: ${CLASSIFICATIONS.length} created`);
+
   const menu = await prisma.menu.upsert({
     where: { id: 'seed_menu_default' },
     create: {
@@ -395,9 +458,13 @@ async function main() {
           data: {
             categoryId: category.id,
             price: item.price,
+            prices: item.prices ?? Prisma.DbNull,
+            badges: item.badges ?? Prisma.DbNull,
             weightOrVolume: item.weightOrVolume || null,
             sortOrder: iIdx,
             isActive: true,
+            regionId: item.regionCode ? regionMap[item.regionCode] || null : null,
+            classificationId: item.classificationCode ? classificationMap[item.classificationCode] || null : null,
           },
         });
 

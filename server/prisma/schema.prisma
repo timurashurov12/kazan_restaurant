@@ -78,18 +78,24 @@ model CategoryTranslation {
 }
 
 model MenuItem {
-  id             String   @id @default(cuid())
+  id             String              @id @default(cuid())
   categoryId     String
-  price          Decimal  @db.Decimal(10, 2)
-  weightOrVolume String?  @db.VarChar(50)
-  sortOrder      Int      @default(0)
-  isActive       Boolean  @default(true)
+  price          Decimal             @db.Decimal(10, 2)
+  prices         Json?               // {"glass": 15000, "shot": 8000}
+  badges         Json?               // ["vegetarian", "top"]
+  weightOrVolume String?             @db.VarChar(50)
+  sortOrder      Int                 @default(0)
+  isActive       Boolean             @default(true)
   imagePath      String?
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  regionId       String?
+  classificationId String?
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
 
-  category     Category              @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-  translations MenuItemTranslation[]
+  category       Category              @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  region         Region?               @relation(fields: [regionId], references: [id], onDelete: SetNull)
+  classification WineClassification?   @relation(fields: [classificationId], references: [id], onDelete: SetNull)
+  translations   MenuItemTranslation[]
 }
 
 model MenuItemTranslation {
@@ -117,4 +123,45 @@ model SiteSettings {
   logoPath      String?
   footerText    String? @db.Text
   contactText   String? @db.Text
+}
+
+model Region {
+  id           String              @id @default(cuid())
+  sortOrder    Int                 @default(0)
+  isActive     Boolean             @default(true)
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+  translations RegionTranslation[]
+  menuItems    MenuItem[]
+}
+
+model RegionTranslation {
+  id       String @id @default(cuid())
+  regionId String
+  locale   String @db.VarChar(10)
+  name     String
+  region   Region @relation(fields: [regionId], references: [id], onDelete: Cascade)
+
+  @@unique([regionId, locale])
+}
+
+model WineClassification {
+  id           String                         @id @default(cuid())
+  code         String                         @unique @db.VarChar(30)
+  sortOrder    Int                            @default(0)
+  isActive     Boolean                        @default(true)
+  createdAt    DateTime                       @default(now())
+  updatedAt    DateTime                       @updatedAt
+  translations WineClassificationTranslation[]
+  menuItems    MenuItem[]
+}
+
+model WineClassificationTranslation {
+  id               String           @id @default(cuid())
+  classificationId String
+  locale           String           @db.VarChar(10)
+  name             String
+  classification   WineClassification @relation(fields: [classificationId], references: [id], onDelete: Cascade)
+
+  @@unique([classificationId, locale])
 }

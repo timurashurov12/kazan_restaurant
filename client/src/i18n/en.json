@@ -84,6 +84,8 @@
       "categories": "Categories",
       "menuItems": "Menu Items",
       "languages": "Languages",
+      "regions": "Regions",
+      "wineClassifications": "Wine Classifications",
       "settings": "Settings",
       "logout": "Logout"
     },

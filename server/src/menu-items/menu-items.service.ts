@@ -41,7 +41,12 @@ export class MenuItemsService {
         orderBy,
         skip,
         take,
-        include: { translations: true, category: { include: { translations: true } } },
+        include: {
+          translations: true,
+          category: { include: { translations: true } },
+          region: { include: { translations: true } },
+          classification: { include: { translations: true } },
+        },
       }),
       this.prisma.menuItem.count({ where }),
     ]);
@@ -52,7 +57,12 @@ export class MenuItemsService {
   async findOne(id: string) {
     const item = await this.prisma.menuItem.findUnique({
       where: { id },
-      include: { translations: true, category: { include: { translations: true } } },
+      include: {
+        translations: true,
+        category: { include: { translations: true } },
+        region: { include: { translations: true } },
+        classification: { include: { translations: true } },
+      },
     });
     if (!item) throw new NotFoundException('Menu item not found');
     return item;
@@ -61,9 +71,13 @@ export class MenuItemsService {
   async create(data: {
     categoryId: string;
     price: number;
+    prices?: any;
+    badges?: any;
     weightOrVolume?: string;
     sortOrder?: number;
     imagePath?: string;
+    regionId?: string;
+    classificationId?: string;
     translations: {
       locale: string;
       name: string;
@@ -74,14 +88,22 @@ export class MenuItemsService {
       data: {
         categoryId: data.categoryId,
         price: data.price,
+        prices: data.prices ?? null,
+        badges: data.badges ?? null,
         weightOrVolume: data.weightOrVolume,
         sortOrder: data.sortOrder ?? 0,
         imagePath: data.imagePath ?? null,
+        regionId: data.regionId ?? null,
+        classificationId: data.classificationId ?? null,
         translations: {
           create: data.translations,
         },
       },
-      include: { translations: true },
+      include: {
+        translations: true,
+        region: { include: { translations: true } },
+        classification: { include: { translations: true } },
+      },
     });
   }
 
@@ -90,10 +112,14 @@ export class MenuItemsService {
     data: {
       categoryId?: string;
       price?: number;
+      prices?: any;
+      badges?: any;
       weightOrVolume?: string;
       sortOrder?: number;
       isActive?: boolean;
       imagePath?: string | null;
+      regionId?: string | null;
+      classificationId?: string | null;
       translations?: {
         locale: string;
         name: string;
@@ -123,12 +149,20 @@ export class MenuItemsService {
       data: {
         categoryId: data.categoryId,
         price: data.price,
+        prices: data.prices,
+        badges: data.badges,
         weightOrVolume: data.weightOrVolume,
         sortOrder: data.sortOrder,
         isActive: data.isActive,
         imagePath: data.imagePath,
+        regionId: data.regionId,
+        classificationId: data.classificationId,
       },
-      include: { translations: true },
+      include: {
+        translations: true,
+        region: { include: { translations: true } },
+        classification: { include: { translations: true } },
+      },
     });
 
     invalidateMenuCache(existing.category.menuTypeId);
