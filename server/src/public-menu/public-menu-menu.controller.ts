@@ -8,7 +8,7 @@ export class PublicMenuController2 {
   constructor(private readonly publicMenuService: PublicMenuService) {}
 
   @Get()
-  @ApiOperation({ summary: 'Get menu by type ID or code (public)' })
+  @ApiOperation({ summary: 'Get menu by type code or ID (public)' })
   @ApiQuery({ name: 'menuTypeId', required: false })
   @ApiQuery({ name: 'type', required: false })
   @ApiQuery({ name: 'locale', required: false, default: 'ru' })
@@ -26,23 +26,24 @@ export class PublicMenuController2 {
     return [];
   }
 
-  @Get(':menuTypeId/categories')
-  @ApiOperation({ summary: 'Get categories for a menu type (public)' })
+  @Get(':menuTypeCode/categories')
+  @ApiOperation({ summary: 'Get categories by menu type code (public)' })
   @ApiQuery({ name: 'locale', required: false, default: 'ru' })
   getCategories(
-    @Param('menuTypeId') menuTypeId: string,
+    @Param('menuTypeCode') menuTypeCode: string,
     @Query('locale') locale = 'ru',
   ) {
-    return this.publicMenuService.getCategories(menuTypeId, locale);
+    return this.publicMenuService.getCategoriesByCode(menuTypeCode, locale);
   }
 
-  @Get('categories/:categoryId/items')
-  @ApiOperation({ summary: 'Get items for a category (public)' })
+  @Get(':menuTypeCode/categories/:categoryCode/items')
+  @ApiOperation({ summary: 'Get items by category code (public)' })
   @ApiQuery({ name: 'locale', required: false, default: 'ru' })
   getCategoryItems(
-    @Param('categoryId') categoryId: string,
+    @Param('menuTypeCode') menuTypeCode: string,
+    @Param('categoryCode') categoryCode: string,
     @Query('locale') locale = 'ru',
   ) {
-    return this.publicMenuService.getCategoryItems(categoryId, locale);
+    return this.publicMenuService.getCategoryItemsByCode(menuTypeCode, categoryCode, locale);
   }
 }

@@ -54,6 +54,7 @@ export class CategoriesService {
 
   async create(data: {
     menuTypeId: string;
+    code: string;
     sortOrder?: number;
     imagePath?: string;
     translations: { locale: string; name: string; description?: string }[];
@@ -61,6 +62,7 @@ export class CategoriesService {
     return this.prisma.category.create({
       data: {
         menuTypeId: data.menuTypeId,
+        code: data.code,
         sortOrder: data.sortOrder ?? 0,
         imagePath: data.imagePath ?? null,
         translations: {

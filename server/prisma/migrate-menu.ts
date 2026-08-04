@@ -497,7 +497,7 @@ async function main() {
         });
       } else {
         category = await prisma.category.create({
-          data: { menuTypeId: menuType.id, sortOrder: cIdx, isActive: true },
+          data: { menuTypeId: menuType.id, code: catData.code, sortOrder: cIdx, isActive: true },
         });
         await prisma.categoryTranslation.create({
           data: { categoryId: category.id, locale: 'ru', name: catData.nameRu },

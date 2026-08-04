@@ -6,14 +6,14 @@ import { fetchCategories, publicUploadUrl } from '@/lib/api';
 import { ArrowLeft, Folder } from 'lucide-react';
 
 export function CategoriesPage() {
-  const { menuTypeId } = useParams<{ menuTypeId: string }>();
+  const { menuTypeCode } = useParams<{ menuTypeCode: string }>();
   const { locale } = useLocale();
   const { t } = useTranslations();
 
   const { data: categories, isLoading } = useQuery({
-    queryKey: ['categories', menuTypeId, locale],
-    queryFn: () => fetchCategories(menuTypeId!, locale),
-    enabled: !!menuTypeId,
+    queryKey: ['categories', menuTypeCode, locale],
+    queryFn: () => fetchCategories(menuTypeCode!, locale),
+    enabled: !!menuTypeCode,
   });
 
   if (isLoading) {
@@ -53,7 +53,7 @@ export function CategoriesPage() {
               return (
                 <Link
                   key={category.id}
-                  to={`/menu/${menuTypeId}/category/${category.id}`}
+                  to={`/menu/${menuTypeCode}/category/${category.code}`}
                   className="group flex flex-col overflow-hidden rounded-2xl border border-white/[0.07] bg-gradient-to-br from-stone-900/50 via-[var(--color-app-panel)]/30 to-stone-950/40 shadow-lg transition-all duration-200 hover:border-[var(--color-app-accent)]/25"
                 >
                   {img ? (

@@ -49,22 +49,23 @@ export type MenuItemDto = {
 
 export type CategoryDto = {
   id: string;
+  code: string;
   name: string;
   description: string | null;
   imagePath: string | null;
 };
 
-export async function fetchCategories(menuTypeId: string, locale: string) {
+export async function fetchCategories(menuTypeCode: string, locale: string) {
   const res = await fetch(
-    `${API_BASE}/menu/${encodeURIComponent(menuTypeId)}/categories?locale=${encodeURIComponent(locale)}`,
+    `${API_BASE}/menu/${encodeURIComponent(menuTypeCode)}/categories?locale=${encodeURIComponent(locale)}`,
   );
   if (!res.ok) throw new Error('Failed to fetch categories');
   return res.json() as Promise<CategoryDto[]>;
 }
 
-export async function fetchCategoryItems(categoryId: string, locale: string) {
+export async function fetchCategoryItems(menuTypeCode: string, categoryCode: string, locale: string) {
   const res = await fetch(
-    `${API_BASE}/menu/categories/${encodeURIComponent(categoryId)}/items?locale=${encodeURIComponent(locale)}`,
+    `${API_BASE}/menu/${encodeURIComponent(menuTypeCode)}/categories/${encodeURIComponent(categoryCode)}/items?locale=${encodeURIComponent(locale)}`,
   );
   if (!res.ok) throw new Error('Failed to fetch category items');
   return res.json() as Promise<MenuItemDto[]>;

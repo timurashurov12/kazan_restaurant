@@ -65,6 +65,7 @@ export class CategoriesController {
     @Body()
     body: {
       menuTypeId: string;
+      code: string;
       sortOrder?: number;
       imagePath?: string;
       translations: { locale: string; name: string; description?: string }[];

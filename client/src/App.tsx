@@ -23,8 +23,8 @@ export default function App() {
         <LanguagePicker />
         <Routes>
         <Route path="/" element={<HomePage />} />
-        <Route path="/menu/:menuTypeId" element={<CategoriesPage />} />
-        <Route path="/menu/:menuTypeId/category/:categoryId" element={<MenuPage />} />
+        <Route path="/menu/:menuTypeCode" element={<CategoriesPage />} />
+        <Route path="/menu/:menuTypeCode/category/:categoryCode" element={<MenuPage />} />
         <Route path="/admin/login" element={<LoginPage />} />
         <Route path="/admin/*" element={<AdminLayout />}>
           <Route index element={<Navigate to="/admin/menu-types" replace />} />

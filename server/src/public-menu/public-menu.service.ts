@@ -24,6 +24,7 @@ export type MenuItemPublicDto = {
 
 export type MenuCategoryPublicDto = {
   id: string;
+  code: string;
   name: string;
   description: string | null;
   imagePath: string | null;
@@ -32,6 +33,7 @@ export type MenuCategoryPublicDto = {
 
 export type CategoryPublicDto = {
   id: string;
+  code: string;
   name: string;
   description: string | null;
   imagePath: string | null;
@@ -129,6 +131,7 @@ export class PublicMenuService {
         cat.translations.find((r) => r.locale === locale) || cat.translations[0];
       return {
         id: cat.id,
+        code: cat.code,
         name: catTr?.name ?? '',
         description: catTr?.description ?? null,
         imagePath: cat.imagePath ?? null,
@@ -203,6 +206,7 @@ export class PublicMenuService {
         cat.translations.find((r) => r.locale === locale) || cat.translations[0];
       return {
         id: cat.id,
+        code: cat.code,
         name: catTr?.name ?? '',
         description: catTr?.description ?? null,
         imagePath: cat.imagePath ?? null,
@@ -263,5 +267,34 @@ export class PublicMenuService {
 
     setCache(key, result);
     return result;
+  }
+
+  async getCategoriesByCode(
+    menuTypeCode: string,
+    locale: string,
+  ): Promise<CategoryPublicDto[] | null> {
+    const type = await this.prisma.menuType.findFirst({
+      where: { code: menuTypeCode, isActive: true, menu: { isActive: true } },
+    });
+    if (!type) return null;
+    return this.getCategories(type.id, locale);
+  }
+
+  async getCategoryItemsByCode(
+    menuTypeCode: string,
+    categoryCode: string,
+    locale: string,
+  ): Promise<MenuItemPublicDto[] | null> {
+    const type = await this.prisma.menuType.findFirst({
+      where: { code: menuTypeCode, isActive: true, menu: { isActive: true } },
+    });
+    if (!type) return null;
+
+    const cat = await this.prisma.category.findFirst({
+      where: { code: categoryCode, menuTypeId: type.id, isActive: true },
+    });
+    if (!cat) return null;
+
+    return this.getCategoryItems(cat.id, locale);
   }
 }

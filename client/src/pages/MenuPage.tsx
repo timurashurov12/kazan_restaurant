@@ -46,25 +46,25 @@ function filterItemsBySearch(items: MenuItemDto[], query: string): MenuItemDto[]
 }
 
 export function MenuPage() {
-  const { menuTypeId, categoryId } = useParams<{ menuTypeId: string; categoryId: string }>();
+  const { menuTypeCode, categoryCode } = useParams<{ menuTypeCode: string; categoryCode: string }>();
   const { locale } = useLocale();
   const { t } = useTranslations();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedItem, setSelectedItem] = useState<MenuItemDto | null>(null);
 
   const { data: items, isLoading } = useQuery({
-    queryKey: ['category-items', categoryId, locale],
-    queryFn: () => fetchCategoryItems(categoryId!, locale),
-    enabled: !!categoryId,
+    queryKey: ['category-items', menuTypeCode, categoryCode, locale],
+    queryFn: () => fetchCategoryItems(menuTypeCode!, categoryCode!, locale),
+    enabled: !!menuTypeCode && !!categoryCode,
   });
 
   const { data: categories } = useQuery({
-    queryKey: ['categories', menuTypeId, locale],
-    queryFn: () => fetchCategories(menuTypeId!, locale),
-    enabled: !!menuTypeId,
+    queryKey: ['categories', menuTypeCode, locale],
+    queryFn: () => fetchCategories(menuTypeCode!, locale),
+    enabled: !!menuTypeCode,
   });
 
-  const currentCategory = categories?.find((c) => c.id === categoryId);
+  const currentCategory = categories?.find((c) => c.code === categoryCode);
 
   const filteredItems = useMemo(
     () => (items ? filterItemsBySearch(items, searchQuery) : []),
@@ -111,7 +111,7 @@ export function MenuPage() {
       <div className="p-4 max-w-2xl mx-auto pb-8 animate-in">
         <div className="mb-6">
           <Link
-            to={`/menu/${menuTypeId}`}
+            to={`/menu/${menuTypeCode}`}
             className="flex items-center gap-2 text-sm text-stone-400 hover:text-[var(--color-app-accent)] transition"
           >
             <ArrowLeft className="h-4 w-4" />

@@ -479,6 +479,7 @@ async function main() {
       const category = await prisma.category.create({
         data: {
           menuTypeId: menuType.id,
+          code: catData.code,
           sortOrder: cIdx,
           isActive: true,
         },
