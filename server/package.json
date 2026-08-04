@@ -10,10 +10,10 @@
     "typecheck": "tsc --noEmit",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
-    "prisma:seed": "ts-node prisma/seed.ts",
-    "prisma:seed-menu": "ts-node prisma/seed-menu.ts",
-    "prisma:seed-regions": "ts-node prisma/seed-regions.ts",
-    "prisma:seed-category-codes": "ts-node prisma/seed-category-codes.ts"
+    "prisma:seed": "npx tsx prisma/seed.ts",
+    "prisma:seed-menu": "npx tsx prisma/seed-menu.ts",
+    "prisma:seed-regions": "npx tsx prisma/seed-regions.ts",
+    "prisma:seed-category-codes": "npx tsx prisma/seed-category-codes.ts"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
@@ -35,7 +35,7 @@
     "reflect-metadata": "^0.2.0",
     "rxjs": "^7.8.1",
     "sharp": "^0.35.3",
-    "ts-node": "^10.9.2"
+    "tsx": "^4.19.0"
   },
   "devDependencies": {
     "@nestjs/cli": "^11.0.0",
