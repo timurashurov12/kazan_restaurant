@@ -137,4 +137,80 @@ export class TranslateService {
     invalidateMenuCache(item.category.menuTypeId);
     return { translated: translatedLocales.length, locales: translatedLocales };
   }
+
+  async translateRegion(
+    regionId: string,
+    targetLocales?: string[],
+  ) {
+    const region = await this.prisma.region.findUnique({
+      where: { id: regionId },
+      include: { translations: true },
+    });
+    if (!region) return { translated: 0, locales: [] };
+
+    const languages = await this.prisma.language.findMany({
+      orderBy: { sortOrder: 'asc' },
+    });
+    const existingLocales = new Set(
+      region.translations.map((t) => t.locale),
+    );
+    const sourceTr = region.translations[0];
+    if (!sourceTr?.name?.trim()) return { translated: 0, locales: [] };
+    const sourceLocale = sourceTr.locale;
+    const sourceName = sourceTr.name;
+
+    const targetLangs = targetLocales?.length
+      ? languages.filter(
+          (l) => targetLocales.includes(l.code) && !existingLocales.has(l.code),
+        )
+      : languages.filter((l) => !existingLocales.has(l.code));
+
+    const translatedLocales: string[] = [];
+    for (const lang of targetLangs) {
+      const name = await this.ai.translate(sourceName, sourceLocale, lang.code);
+      await this.prisma.regionTranslation.create({
+        data: { regionId, locale: lang.code, name },
+      });
+      translatedLocales.push(lang.code);
+    }
+    return { translated: translatedLocales.length, locales: translatedLocales };
+  }
+
+  async translateWineClassification(
+    classificationId: string,
+    targetLocales?: string[],
+  ) {
+    const classification = await this.prisma.wineClassification.findUnique({
+      where: { id: classificationId },
+      include: { translations: true },
+    });
+    if (!classification) return { translated: 0, locales: [] };
+
+    const languages = await this.prisma.language.findMany({
+      orderBy: { sortOrder: 'asc' },
+    });
+    const existingLocales = new Set(
+      classification.translations.map((t) => t.locale),
+    );
+    const sourceTr = classification.translations[0];
+    if (!sourceTr?.name?.trim()) return { translated: 0, locales: [] };
+    const sourceLocale = sourceTr.locale;
+    const sourceName = sourceTr.name;
+
+    const targetLangs = targetLocales?.length
+      ? languages.filter(
+          (l) => targetLocales.includes(l.code) && !existingLocales.has(l.code),
+        )
+      : languages.filter((l) => !existingLocales.has(l.code));
+
+    const translatedLocales: string[] = [];
+    for (const lang of targetLangs) {
+      const name = await this.ai.translate(sourceName, sourceLocale, lang.code);
+      await this.prisma.wineClassificationTranslation.create({
+        data: { classificationId, locale: lang.code, name },
+      });
+      translatedLocales.push(lang.code);
+    }
+    return { translated: translatedLocales.length, locales: translatedLocales };
+  }
 }

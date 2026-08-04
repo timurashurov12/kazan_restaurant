@@ -146,3 +146,25 @@ export async function translateI18nFile(code: string, sourceLocale: string = 'ru
   if (!res.ok) throw new Error('Translation failed');
   return res.json() as Promise<{ success: boolean; code: string }>;
 }
+
+export async function translateRegion(regionId: string) {
+  const res = await fetch(`${API_BASE}/admin/translate/region`, {
+    method: 'POST',
+    headers: authHeaders(),
+    body: JSON.stringify({ regionId }),
+  });
+  checkAuth(res);
+  if (!res.ok) throw new Error('Translation failed');
+  return res.json() as Promise<{ translated: number; locales: string[] }>;
+}
+
+export async function translateWineClassification(classificationId: string) {
+  const res = await fetch(`${API_BASE}/admin/translate/wine-classification`, {
+    method: 'POST',
+    headers: authHeaders(),
+    body: JSON.stringify({ classificationId }),
+  });
+  checkAuth(res);
+  if (!res.ok) throw new Error('Translation failed');
+  return res.json() as Promise<{ translated: number; locales: string[] }>;
+}

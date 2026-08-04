@@ -43,12 +43,34 @@ export class TranslateController {
     );
   }
 
+  @Post('region')
+  @ApiOperation({ summary: 'Translate region' })
+  translateRegion(
+    @Body() body: { regionId: string; targetLocales?: string[] },
+  ) {
+    return this.translateService.translateRegion(
+      body.regionId,
+      body.targetLocales,
+    );
+  }
+
+  @Post('wine-classification')
+  @ApiOperation({ summary: 'Translate wine classification' })
+  translateWineClassification(
+    @Body() body: { classificationId: string; targetLocales?: string[] },
+  ) {
+    return this.translateService.translateWineClassification(
+      body.classificationId,
+      body.targetLocales,
+    );
+  }
+
   @Post('bulk')
   @ApiOperation({ summary: 'Bulk translate entities' })
   async bulkTranslate(
     @Body()
     body: {
-      type: 'menu-type' | 'category' | 'menu-item';
+      type: 'menu-type' | 'category' | 'menu-item' | 'region' | 'wine-classification';
       ids: string[];
       targetLocales?: string[];
     },
@@ -68,6 +90,12 @@ export class TranslateController {
             break;
           case 'menu-item':
             result = await this.translateService.translateMenuItem(id, body.targetLocales);
+            break;
+          case 'region':
+            result = await this.translateService.translateRegion(id, body.targetLocales);
+            break;
+          case 'wine-classification':
+            result = await this.translateService.translateWineClassification(id, body.targetLocales);
             break;
         }
         totalTranslated += result?.translated ?? 0;

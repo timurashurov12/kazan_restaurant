@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { Plus, Pencil, Trash2, X, Globe } from 'lucide-react';
+import { Plus, Pencil, Trash2, X, Globe, Languages } from 'lucide-react';
 import { API_BASE, headers, authFetch } from './api';
+import { translateRegion } from '@/lib/api';
 import { useTranslations } from '@/i18n';
 import { LanguageTabs } from '@/components/LanguageTabs';
 
@@ -75,6 +76,17 @@ export function RegionsPage() {
     },
   });
 
+  const translateMu = useMutation({
+    mutationFn: (id: string) => translateRegion(id),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'regions'] });
+      toast.success(t('toast.translated', { count: data.translated }));
+    },
+    onError: (err: Error) => {
+      toast.error(err.message || t('errors.translationFailed'));
+    },
+  });
+
   const openCreate = () => {
     setEditingId(null);
     setSortOrder(0);
@@ -122,6 +134,14 @@ export function RegionsPage() {
                 <td className="px-4 py-3 text-stone-100 text-sm">{ruName(region.translations)}</td>
                 <td className="px-4 py-3 text-right">
                   <div className="flex items-center justify-end gap-1">
+                    <button
+                      onClick={() => translateMu.mutate(region.id)}
+                      disabled={translateMu.isPending}
+                      className="p-2 text-blue-400 hover:bg-blue-500/10 rounded-lg"
+                      title={t('common.translate')}
+                    >
+                      <Languages className="w-4 h-4" />
+                    </button>
                     <button onClick={() => openEdit(region)} className="p-2 text-[var(--color-app-accent)] hover:bg-[var(--color-app-accent)]/10 rounded-lg"><Pencil className="w-4 h-4" /></button>
                     <button onClick={() => { if (confirm(t('common.confirmDelete'))) deleteMu.mutate(region.id); }} className="p-2 text-red-400 hover:bg-red-500/10 rounded-lg"><Trash2 className="w-4 h-4" /></button>
                   </div>
