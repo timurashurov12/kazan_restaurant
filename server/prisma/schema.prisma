@@ -55,7 +55,7 @@ model MenuTypeTranslation {
 model Category {
   id         String   @id @default(cuid())
   menuTypeId String
-  code       String   @db.VarChar(30)
+  code       String?  @db.VarChar(30)
   sortOrder  Int      @default(0)
   isActive   Boolean  @default(true)
   imagePath  String?

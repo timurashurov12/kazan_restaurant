@@ -131,7 +131,7 @@ export class PublicMenuService {
         cat.translations.find((r) => r.locale === locale) || cat.translations[0];
       return {
         id: cat.id,
-        code: cat.code,
+        code: cat.code ?? '',
         name: catTr?.name ?? '',
         description: catTr?.description ?? null,
         imagePath: cat.imagePath ?? null,
@@ -206,7 +206,7 @@ export class PublicMenuService {
         cat.translations.find((r) => r.locale === locale) || cat.translations[0];
       return {
         id: cat.id,
-        code: cat.code,
+        code: cat.code ?? '',
         name: catTr?.name ?? '',
         description: catTr?.description ?? null,
         imagePath: cat.imagePath ?? null,
