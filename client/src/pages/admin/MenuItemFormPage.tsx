@@ -207,7 +207,7 @@ export function MenuItemFormPage() {
 
                 {/* Region */}
                 <div className="sm:col-span-2">
-                  <label className="block text-sm font-medium text-stone-400 mb-1">Регион</label>
+                  <label className="block text-sm font-medium text-stone-400 mb-1">{t('common.region')}</label>
                   <div className="relative">
                     <select
                       value={regionId || ''}
@@ -230,7 +230,7 @@ export function MenuItemFormPage() {
 
                 {/* Wine Classification */}
                 <div className="sm:col-span-2">
-                  <label className="block text-sm font-medium text-stone-400 mb-1">Классификация вина</label>
+                  <label className="block text-sm font-medium text-stone-400 mb-1">{t('common.wineClassification')}</label>
                   <div className="relative">
                     <select
                       value={classificationId || ''}
@@ -254,12 +254,12 @@ export function MenuItemFormPage() {
             </FormSection>
 
             {/* Section: Additional Prices */}
-            <FormSection icon={CircleDollarSign} title="Доп. цены (бокал, стопка)">
+            <FormSection icon={CircleDollarSign} title={t('common.extraPrices')}>
               <PricesEditor value={prices} onChange={setPrices} />
             </FormSection>
 
             {/* Section: Badges */}
-            <FormSection icon={Tag} title="Бейджи">
+            <FormSection icon={Tag} title={t('common.badges')}>
               <BadgePicker value={badges} onChange={setBadges} />
             </FormSection>
 
@@ -272,7 +272,7 @@ export function MenuItemFormPage() {
                   onChange={setTranslations}
                   showDescription
                   nameLabel={t('common.name')}
-                  descriptionLabel={t('admin.menuItems.descriptionRu')}
+                  descriptionLabel={t('common.description')}
                 />
               ) : (
                 <p className="text-stone-500 text-sm">{t('common.loading')}</p>

@@ -38,7 +38,12 @@
     "mainInfo": "Основная информация",
     "translations": "Переводы",
     "image": "Изображение",
-    "imageAfterSave": "Изображение можно добавить после сохранения"
+    "imageAfterSave": "Изображение можно добавить после сохранения",
+    "description": "Описание",
+    "region": "Регион",
+    "wineClassification": "Классификация вина",
+    "extraPrices": "Доп. цены (бокал, стопка)",
+    "badges": "Бейджи"
   },
   "home": {
     "title": "Наше меню",
@@ -84,7 +89,7 @@
       "categories": "Категории",
       "menuItems": "Блюда",
       "languages": "Языки",
-      "regions": "Регионы",
+      "regions": "Регионы вин",
       "wineClassifications": "Классификация вин",
       "settings": "Настройки",
       "logout": "Выйти"

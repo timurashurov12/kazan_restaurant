@@ -100,7 +100,7 @@ export function RegionsPage() {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-semibold text-stone-100">Регионы</h1>
+        <h1 className="text-2xl font-semibold text-stone-100">{t('admin.nav.regions')}</h1>
         <button onClick={openCreate} className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium" style={{ backgroundColor: 'var(--color-app-accent)', color: 'var(--color-app-bg)' }}>
           <Plus className="w-4 h-4" /> {t('common.add')}
         </button>
@@ -140,7 +140,7 @@ export function RegionsPage() {
           <div className="absolute inset-0 bg-black/60" onClick={closeModal} />
           <div className="relative w-full max-w-lg bg-[var(--color-app-panel)] border border-[var(--color-border)] rounded-2xl p-6 space-y-4 animate-in">
             <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-stone-100">{editingId ? 'Редактировать регион' : 'Новый регион'}</h2>
+              <h2 className="text-lg font-semibold text-stone-100">{editingId ? `${t('common.edit')} ${t('common.name').toLowerCase()}` : `${t('common.create')} ${t('common.name').toLowerCase()}`}</h2>
               <button onClick={closeModal} className="p-2 text-stone-400 hover:text-stone-200 rounded-lg hover:bg-white/5"><X className="w-5 h-5" /></button>
             </div>
 
@@ -150,7 +150,7 @@ export function RegionsPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-stone-400 mb-1 flex items-center gap-1.5"><Globe className="w-3.5 h-3.5" /> Переводы</label>
+              <label className="block text-sm font-medium text-stone-400 mb-1 flex items-center gap-1.5"><Globe className="w-3.5 h-3.5" /> {t('common.translations')}</label>
               {languages.length > 0 ? (
                 <LanguageTabs languages={languages} translations={translations} onChange={setTranslations} nameLabel="Название" />
               ) : (

@@ -31,8 +31,8 @@ function AdminLayoutInner() {
     { path: '/admin/categories', label: t('admin.nav.categories'), icon: List },
     { path: '/admin/menu-items', label: t('admin.nav.menuItems'), icon: Package },
     { path: '/admin/languages', label: t('admin.nav.languages'), icon: Globe },
-    { path: '/admin/regions', label: 'Регионы', icon: MapPin },
-    { path: '/admin/wine-classifications', label: 'Классификация вин', icon: Wine },
+    { path: '/admin/regions', label: t('admin.nav.regions'), icon: MapPin },
+    { path: '/admin/wine-classifications', label: t('admin.nav.wineClassifications'), icon: Wine },
     { path: '/admin/settings', label: t('admin.nav.settings'), icon: Settings },
   ];
 

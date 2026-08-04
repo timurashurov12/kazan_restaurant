@@ -38,7 +38,12 @@
     "mainInfo": "Main Info",
     "translations": "Translations",
     "image": "Image",
-    "imageAfterSave": "Image can be added after saving"
+    "imageAfterSave": "Image can be added after saving",
+    "description": "Description",
+    "region": "Region",
+    "wineClassification": "Wine Classification",
+    "extraPrices": "Extra Prices (Glass, Shot)",
+    "badges": "Badges"
   },
   "home": {
     "title": "Our Menu",
@@ -84,7 +89,7 @@
       "categories": "Categories",
       "menuItems": "Menu Items",
       "languages": "Languages",
-      "regions": "Regions",
+      "regions": "Wine Regions",
       "wineClassifications": "Wine Classifications",
       "settings": "Settings",
       "logout": "Logout"

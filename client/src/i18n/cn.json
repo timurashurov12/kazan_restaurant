@@ -38,7 +38,12 @@
     "mainInfo": "",
     "translations": "",
     "image": "",
-    "imageAfterSave": ""
+    "imageAfterSave": "",
+    "description": "",
+    "region": "",
+    "wineClassification": "",
+    "extraPrices": "",
+    "badges": ""
   },
   "home": {
     "title": "",
@@ -84,6 +89,8 @@
       "categories": "",
       "menuItems": "",
       "languages": "",
+      "regions": "",
+      "wineClassifications": "",
       "settings": "",
       "logout": ""
     },
