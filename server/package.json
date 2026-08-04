@@ -10,7 +10,9 @@
     "typecheck": "tsc --noEmit",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
-    "prisma:seed": "ts-node prisma/seed.ts"
+    "prisma:seed": "ts-node prisma/seed.ts",
+    "prisma:seed-menu": "ts-node prisma/seed-menu.ts",
+    "prisma:seed-regions": "ts-node prisma/seed-regions.ts"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",

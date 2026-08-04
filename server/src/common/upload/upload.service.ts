@@ -1,10 +1,17 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { existsSync, mkdirSync } from 'fs';
+import { writeFile } from 'fs/promises';
 import { join } from 'path';
 import * as crypto from 'crypto';
 
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const sharpModule = (() => { try { return require('sharp'); } catch { return null; } })() as ((input: Buffer) => ReturnType<typeof import('sharp')['default']>) | null;
+let sharp: ((input: Buffer | string) => import('sharp').Sharp) | null = null;
+try {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const mod = require('sharp');
+  sharp = typeof mod === 'function' ? mod : mod.default ?? null;
+} catch {
+  sharp = null;
+}
 
 @Injectable()
 export class UploadService {
@@ -16,7 +23,7 @@ export class UploadService {
     if (!existsSync(this.uploadsDir)) {
       mkdirSync(this.uploadsDir, { recursive: true });
     }
-    if (sharpModule) {
+    if (sharp) {
       this.logger.log('sharp loaded — images will be compressed to webp');
     } else {
       this.logger.warn('sharp not available — images saved in original format');
@@ -24,11 +31,11 @@ export class UploadService {
   }
 
   async saveFile(file: Express.Multer.File): Promise<string> {
-    if (sharpModule) {
+    if (sharp) {
       const filename = `${crypto.randomUUID()}.webp`;
       const filepath = join(this.uploadsDir, filename);
       try {
-        await sharpModule(file.buffer)
+        await sharp(file.buffer)
           .resize(1200, 1200, { fit: 'inside', withoutEnlargement: true })
           .webp({ quality: 80 })
           .toFile(filepath);
@@ -41,7 +48,6 @@ export class UploadService {
     const ext = file.originalname.split('.').pop() || 'jpg';
     const filename = `${crypto.randomUUID()}.${ext}`;
     const filepath = join(this.uploadsDir, filename);
-    const { writeFile } = await import('fs/promises');
     await writeFile(filepath, file.buffer);
     return `/uploads/${filename}`;
   }
