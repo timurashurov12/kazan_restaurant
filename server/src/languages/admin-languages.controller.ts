@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Delete, Body, Param, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Delete, Body, Param, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { LanguagesService } from './languages.service';
@@ -20,6 +20,12 @@ export class AdminLanguagesController {
   @ApiOperation({ summary: 'Create language' })
   create(@Body() body: { code: string; name: string; sortOrder?: number }) {
     return this.languagesService.create(body);
+  }
+
+  @Patch(':id')
+  @ApiOperation({ summary: 'Update language' })
+  update(@Param('id') id: string, @Body() body: { code?: string; name?: string; sortOrder?: number }) {
+    return this.languagesService.update(id, body);
   }
 
   @Delete(':id')

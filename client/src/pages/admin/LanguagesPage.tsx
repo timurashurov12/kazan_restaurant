@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { Plus, Trash2, Globe, Languages } from 'lucide-react';
+import { Plus, Trash2, Globe, Languages, Pencil } from 'lucide-react';
 import { API_BASE, headers, authFetch } from './api';
 import { translateI18nFile } from '@/lib/api';
 import { useTranslations } from '@/i18n';
@@ -12,6 +12,7 @@ export function LanguagesPage() {
   const queryClient = useQueryClient();
   const { t } = useTranslations();
   const [showCreate, setShowCreate] = useState(false);
+  const [editing, setEditing] = useState<Language | null>(null);
 
   const { data: languages = [], isLoading } = useQuery({
     queryKey: ['admin', 'languages'],
@@ -84,6 +85,13 @@ export function LanguagesPage() {
                 <td className="px-4 py-3 text-stone-100 text-sm">{lang.name}</td>
                 <td className="px-4 py-3 text-right">
                   <div className="flex items-center justify-end gap-1">
+                    <button
+                      onClick={() => setEditing(lang)}
+                      className="p-2 text-stone-400 hover:text-stone-200 hover:bg-white/5 rounded-lg"
+                      title={t('common.edit')}
+                    >
+                      <Pencil className="w-4 h-4" />
+                    </button>
                     {lang.code !== 'ru' && lang.code !== 'en' && (
                       <button
                         onClick={() => translateMu.mutate(lang.code)}
@@ -111,25 +119,30 @@ export function LanguagesPage() {
         </table>
       </div>
 
-      {showCreate && <CreateModal onClose={() => setShowCreate(false)} />}
+      {showCreate && <LanguageModal onClose={() => setShowCreate(false)} />}
+      {editing && <LanguageModal language={editing} onClose={() => setEditing(null)} />}
     </div>
   );
 }
 
-function CreateModal({ onClose }: { onClose: () => void }) {
+function LanguageModal({ language, onClose }: { language?: Language; onClose: () => void }) {
   const queryClient = useQueryClient();
   const { t } = useTranslations();
-  const [code, setCode] = useState('');
-  const [name, setName] = useState('');
-  const [sortOrder, setSortOrder] = useState(0);
+  const isEdit = Boolean(language);
+  const [code, setCode] = useState(language?.code ?? '');
+  const [name, setName] = useState(language?.name ?? '');
+  const [sortOrder, setSortOrder] = useState(language?.sortOrder ?? 0);
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     try {
-      const res = await authFetch(`${API_BASE}/admin/languages`, {
-        method: 'POST',
+      const url = isEdit
+        ? `${API_BASE}/admin/languages/${language!.id}`
+        : `${API_BASE}/admin/languages`;
+      const res = await authFetch(url, {
+        method: isEdit ? 'PATCH' : 'POST',
         headers: headers(),
         body: JSON.stringify({ code: code.trim().toLowerCase(), name, sortOrder }),
       });
@@ -139,7 +152,7 @@ function CreateModal({ onClose }: { onClose: () => void }) {
       }
       queryClient.invalidateQueries({ queryKey: ['admin', 'languages'] });
       queryClient.invalidateQueries({ queryKey: ['languages'] });
-      toast.success(t('toast.created'));
+      toast.success(isEdit ? t('toast.updated') : t('toast.created'));
       onClose();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : t('errors.createFailed'));
@@ -151,7 +164,7 @@ function CreateModal({ onClose }: { onClose: () => void }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={(e) => e.target === e.currentTarget && onClose()}>
       <div className="w-full max-w-md p-6 rounded-2xl border border-[var(--color-border)] bg-[var(--color-app-panel)]" onClick={(e) => e.stopPropagation()}>
-        <h2 className="text-lg font-semibold text-stone-100">{t('admin.languages.newTitle')}</h2>
+        <h2 className="text-lg font-semibold text-stone-100">{isEdit ? t('common.edit') : t('admin.languages.newTitle')}</h2>
         <form onSubmit={handleSubmit} className="space-y-4 mt-4">
           <div>
             <label className="block text-sm font-medium text-stone-400 mb-1">{t('common.code')}</label>
@@ -160,7 +173,8 @@ function CreateModal({ onClose }: { onClose: () => void }) {
               onChange={(e) => setCode(e.target.value)}
               placeholder="kk"
               required
-              className="w-full px-4 py-2 rounded-lg bg-[var(--color-app-bg)] border border-[var(--color-border)] text-stone-100 placeholder:text-stone-500 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-app-accent)]/40"
+              disabled={isEdit}
+              className="w-full px-4 py-2 rounded-lg bg-[var(--color-app-bg)] border border-[var(--color-border)] text-stone-100 placeholder:text-stone-500 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-app-accent)]/40 disabled:opacity-50"
             />
           </div>
           <div>
@@ -190,7 +204,7 @@ function CreateModal({ onClose }: { onClose: () => void }) {
               className="px-4 py-2 rounded-lg text-sm font-medium"
               style={{ backgroundColor: 'var(--color-app-accent)', color: 'var(--color-app-bg)' }}
             >
-              {loading ? t('common.loading') : t('common.create')}
+              {loading ? t('common.loading') : (isEdit ? t('common.save') : t('common.create'))}
             </button>
           </div>
         </form>

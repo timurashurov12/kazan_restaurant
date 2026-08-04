@@ -48,6 +48,20 @@ export class LanguagesService {
     });
   }
 
+  async update(id: string, data: { code?: string; name?: string; sortOrder?: number }) {
+    const existing = await this.prisma.language.findUnique({ where: { id } });
+    if (!existing) throw new BadRequestException('Language not found');
+
+    return this.prisma.language.update({
+      where: { id },
+      data: {
+        ...(data.code !== undefined && { code: data.code }),
+        ...(data.name !== undefined && { name: data.name }),
+        ...(data.sortOrder !== undefined && { sortOrder: data.sortOrder }),
+      },
+    });
+  }
+
   async create(data: { code: string; name: string; sortOrder?: number }) {
     const lang = await this.prisma.language.create({
       data: {
