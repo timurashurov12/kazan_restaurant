@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { ArrowLeft, Image as ImageIcon, Settings, Languages, Tag, CircleDollarSign, ChevronDown, X } from 'lucide-react';
@@ -32,8 +32,10 @@ export function MenuItemFormPage() {
   const { id } = useParams<{ id: string }>();
   const isEdit = Boolean(id);
   const navigate = useNavigate();
+  const location = useLocation();
   const queryClient = useQueryClient();
   const { t } = useTranslations();
+  const returnTo = (location.state as { from?: string } | null)?.from ?? '';
 
   const [categoryId, setCategoryId] = useState('');
   const [price, setPrice] = useState('');
@@ -154,7 +156,7 @@ export function MenuItemFormPage() {
         queryClient.invalidateQueries({ queryKey: ['admin', 'menu-items'] });
         toast.success(t('toast.created'));
       }
-      navigate('/admin/menu-items');
+      navigate(`/admin/menu-items${returnTo}`);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : t('errors.createFailed'));
     } finally {
@@ -169,7 +171,7 @@ export function MenuItemFormPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-3">
-        <button onClick={() => navigate('/admin/menu-items')} className="p-2 text-stone-400 hover:text-stone-200 hover:bg-white/5 rounded-lg">
+        <button onClick={() => navigate(`/admin/menu-items${returnTo}`)} className="p-2 text-stone-400 hover:text-stone-200 hover:bg-white/5 rounded-lg">
           <ArrowLeft className="w-5 h-5" />
         </button>
         <h1 className="text-2xl font-semibold text-stone-100">
@@ -297,7 +299,7 @@ export function MenuItemFormPage() {
 
         {/* Actions */}
         <div className="flex gap-2 justify-end pt-2 border-t border-[var(--color-border)]">
-          <button type="button" onClick={() => navigate('/admin/menu-items')} className="px-4 py-2 rounded-lg text-sm text-stone-400">{t('common.cancel')}</button>
+          <button type="button" onClick={() => navigate(`/admin/menu-items${returnTo}`)} className="px-4 py-2 rounded-lg text-sm text-stone-400">{t('common.cancel')}</button>
           <button type="submit" disabled={loading} className="px-6 py-2 rounded-lg text-sm font-medium" style={{ backgroundColor: 'var(--color-app-accent)', color: 'var(--color-app-bg)' }}>
             {isEdit ? t('common.save') : t('common.create')}
           </button>

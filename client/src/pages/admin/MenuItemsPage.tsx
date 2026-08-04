@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { Plus, Pencil, Trash2, Languages, ChevronLeft, ChevronRight, Search, SlidersHorizontal, X } from 'lucide-react';
@@ -31,15 +31,30 @@ const PAGE_SIZE = 20;
 
 export function MenuItemsPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const queryClient = useQueryClient();
   const { t } = useTranslations();
-  const [filterCategoryId, setFilterCategoryId] = useState<string>('');
-  const [search, setSearch] = useState('');
-  const [searchInput, setSearchInput] = useState('');
-  const [sortBy, setSortBy] = useState<'sortOrder' | 'price' | 'category'>('sortOrder');
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
-  const [page, setPage] = useState(0);
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const filterCategoryId = searchParams.get('categoryId') ?? '';
+  const search = searchParams.get('search') ?? '';
+  const [searchInput, setSearchInput] = useState(search);
+  const sortBy = (searchParams.get('sortBy') as 'sortOrder' | 'price' | 'category') ?? 'sortOrder';
+  const sortOrder = (searchParams.get('sortOrder') as 'asc' | 'desc') ?? 'asc';
+  const page = Math.max(0, Number(searchParams.get('page') ?? '0') || 0);
   const [filterOpen, setFilterOpen] = useState(false);
+
+  const setParam = (key: string, value: string) => {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      if (value) {
+        next.set(key, value);
+      } else {
+        next.delete(key);
+      }
+      return next;
+    }, { replace: true });
+  };
 
   const { data: categoriesData } = useQuery({
     queryKey: ['admin', 'categories'],
@@ -96,15 +111,15 @@ export function MenuItemsPage() {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    setSearch(searchInput);
-    setPage(0);
+    setParam('search', searchInput);
+    setParam('page', '0');
   };
 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center flex-wrap gap-4">
         <h1 className="text-2xl font-semibold text-stone-100">{t('admin.menuItems.title')}</h1>
-        <button onClick={() => navigate('/admin/menu-items/new')} className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium" style={{ backgroundColor: 'var(--color-app-accent)', color: 'var(--color-app-bg)' }}>
+        <button onClick={() => navigate('/admin/menu-items/new', { state: { from: location.search } })} className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium" style={{ backgroundColor: 'var(--color-app-accent)', color: 'var(--color-app-bg)' }}>
           <Plus className="w-4 h-4" /> {t('common.add')}
         </button>
       </div>
@@ -142,10 +157,10 @@ export function MenuItemsPage() {
         <table className="w-full">
           <thead>
             <tr className="border-b border-[var(--color-border)]">
-              <SortHeader label={t('common.sort')} field="sortOrder" sortBy={sortBy} sortOrder={sortOrder} onSort={(field, order) => { setSortBy(field); setSortOrder(order); setPage(0); }} />
+              <SortHeader label={t('common.sort')} field="sortOrder" sortBy={sortBy} sortOrder={sortOrder} onSort={(field, order) => { setParam('sortBy', field); setParam('sortOrder', order); setParam('page', '0'); }} />
               <th className="px-4 py-3 text-left text-xs font-medium text-stone-400 uppercase">{t('common.name')}</th>
-              <SortHeader label={t('admin.categories.title')} field="category" sortBy={sortBy} sortOrder={sortOrder} onSort={(field, order) => { setSortBy(field); setSortOrder(order); setPage(0); }} />
-              <SortHeader label={t('common.price')} field="price" sortBy={sortBy} sortOrder={sortOrder} onSort={(field, order) => { setSortBy(field); setSortOrder(order); setPage(0); }} align="right" />
+              <SortHeader label={t('admin.categories.title')} field="category" sortBy={sortBy} sortOrder={sortOrder} onSort={(field, order) => { setParam('sortBy', field); setParam('sortOrder', order); setParam('page', '0'); }} />
+              <SortHeader label={t('common.price')} field="price" sortBy={sortBy} sortOrder={sortOrder} onSort={(field, order) => { setParam('sortBy', field); setParam('sortOrder', order); setParam('page', '0'); }} align="right" />
               <th className="px-4 py-3 text-right text-xs font-medium text-stone-400 uppercase">{t('common.weight')}</th>
               <th className="px-4 py-3 text-right text-xs font-medium text-stone-400 uppercase">{t('common.actions')}</th>
             </tr>
@@ -170,7 +185,7 @@ export function MenuItemsPage() {
                 <td className="px-4 py-3 text-right">
                   <div className="flex items-center justify-end gap-1">
                     <button onClick={() => translateMu.mutate(item.id)} disabled={translateMu.isPending} className="p-2 text-blue-400 hover:bg-blue-500/10 rounded-lg" title={t('common.translate')}><Languages className="w-4 h-4" /></button>
-                    <button onClick={() => navigate(`/admin/menu-items/${item.id}/edit`)} className="p-2 text-[var(--color-app-accent)] hover:bg-[var(--color-app-accent)]/10 rounded-lg"><Pencil className="w-4 h-4" /></button>
+                    <button onClick={() => navigate(`/admin/menu-items/${item.id}/edit`, { state: { from: location.search } })} className="p-2 text-[var(--color-app-accent)] hover:bg-[var(--color-app-accent)]/10 rounded-lg"><Pencil className="w-4 h-4" /></button>
                     <button onClick={() => { if (confirm(t('common.confirmDelete'))) deleteMu.mutate(item.id); }} className="p-2 text-red-400 hover:bg-red-500/10 rounded-lg"><Trash2 className="w-4 h-4" /></button>
                   </div>
                 </td>
@@ -192,7 +207,7 @@ export function MenuItemsPage() {
           </p>
           <div className="flex items-center gap-2">
             <button
-              onClick={() => setPage((p) => Math.max(0, p - 1))}
+              onClick={() => setParam('page', String(Math.max(0, page - 1)))}
               disabled={page === 0}
               className="flex items-center gap-1 px-3 py-2 rounded-lg text-sm text-stone-400 hover:text-stone-200 hover:bg-white/5 border border-[var(--color-border)] disabled:opacity-40 disabled:cursor-not-allowed"
             >
@@ -200,7 +215,7 @@ export function MenuItemsPage() {
             </button>
             <span className="text-sm text-stone-400">{page + 1} / {totalPages}</span>
             <button
-              onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+              onClick={() => setParam('page', String(Math.min(totalPages - 1, page + 1)))}
               disabled={page >= totalPages - 1}
               className="flex items-center gap-1 px-3 py-2 rounded-lg text-sm text-stone-400 hover:text-stone-200 hover:bg-white/5 border border-[var(--color-border)] disabled:opacity-40 disabled:cursor-not-allowed"
             >
@@ -225,7 +240,7 @@ export function MenuItemsPage() {
                 <label className="block text-sm font-medium text-stone-400 mb-2">{t('admin.categories.title')}</label>
                 <div className="space-y-1">
                   <button
-                    onClick={() => { setFilterCategoryId(''); setPage(0); setFilterOpen(false); }}
+                    onClick={() => { setParam('categoryId', ''); setParam('page', '0'); setFilterOpen(false); }}
                     className={`w-full text-left px-3 py-2 rounded-lg text-sm transition ${
                       !filterCategoryId
                         ? 'bg-[var(--color-app-accent)]/15 text-[var(--color-app-accent)]'
@@ -237,7 +252,7 @@ export function MenuItemsPage() {
                   {categories.map((c) => (
                     <button
                       key={c.id}
-                      onClick={() => { setFilterCategoryId(c.id); setPage(0); setFilterOpen(false); }}
+                      onClick={() => { setParam('categoryId', c.id); setParam('page', '0'); setFilterOpen(false); }}
                       className={`w-full text-left px-3 py-2 rounded-lg text-sm transition ${
                         filterCategoryId === c.id
                           ? 'bg-[var(--color-app-accent)]/15 text-[var(--color-app-accent)]'
