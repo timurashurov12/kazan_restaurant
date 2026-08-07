@@ -1,4 +1,5 @@
 import { Leaf, Star } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 export const BADGE_CONFIG: Record<string, { icon: React.ComponentType<{ className?: string }>; color: string; bg: string; label: string }> = {
   vegetarian: {
@@ -35,11 +36,13 @@ export function BadgePicker({ value, onChange }: BadgePickerProps) {
         const Icon = config.icon;
         const active = value.includes(code);
         return (
-          <button
+          <Button
             key={code}
             type="button"
+            variant="outline"
+            size="sm"
             onClick={() => toggle(code)}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition ${
+            className={`flex items-center gap-1.5 ${
               active
                 ? `${config.bg} ${config.color}`
                 : 'border-[var(--color-border)] text-stone-400 hover:text-stone-200 hover:bg-white/5'
@@ -47,7 +50,7 @@ export function BadgePicker({ value, onChange }: BadgePickerProps) {
           >
             <Icon className="w-3.5 h-3.5" />
             {config.label}
-          </button>
+          </Button>
         );
       })}
     </div>

@@ -3,6 +3,8 @@ import { useNavigate, Navigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Eye, EyeOff } from 'lucide-react';
 import { I18nProvider, useTranslations } from '@/i18n';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 const API_BASE = import.meta.env.VITE_API_URL ?? '';
 
@@ -51,22 +53,22 @@ function LoginPageInner() {
     <div className="min-h-screen flex items-center justify-center p-4" style={{ backgroundColor: 'var(--color-app-bg)' }}>
       <form onSubmit={handleSubmit} className="w-full max-w-sm space-y-4 p-6 rounded-2xl border border-[var(--color-border)] bg-[var(--color-app-panel)]">
         <img src="/logo.svg" alt="Kazan" className="mx-auto h-12 w-auto" />
-        <input
+        <Input
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder={t('admin.login.email')}
           required
-          className="w-full px-4 py-2.5 rounded-lg bg-[var(--color-app-bg)] border border-[var(--color-border)] text-stone-100 placeholder:text-stone-500 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-app-accent)]/40"
+          className="bg-[var(--color-app-bg)] border-[var(--color-border)] text-stone-100 placeholder:text-stone-500"
         />
         <div className="relative">
-          <input
+          <Input
             type={showPassword ? 'text' : 'password'}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder={t('admin.login.password')}
             required
-            className="w-full px-4 py-2.5 pr-10 rounded-lg bg-[var(--color-app-bg)] border border-[var(--color-border)] text-stone-100 placeholder:text-stone-500 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-app-accent)]/40"
+            className="pr-10 bg-[var(--color-app-bg)] border-[var(--color-border)] text-stone-100 placeholder:text-stone-500"
           />
           <button
             type="button"
@@ -76,14 +78,13 @@ function LoginPageInner() {
             {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
           </button>
         </div>
-        <button
+        <Button
           type="submit"
           disabled={loading}
-          className="w-full py-2.5 rounded-lg font-medium text-sm transition disabled:opacity-50"
-          style={{ backgroundColor: 'var(--color-app-accent)', color: 'var(--color-app-bg)' }}
+          className="w-full"
         >
           {loading ? t('admin.login.signingIn') : t('admin.login.signIn')}
-        </button>
+        </Button>
       </form>
     </div>
   );

@@ -7,6 +7,10 @@ import { translateMenuType } from '@/lib/api';
 import { useTranslations } from '@/i18n';
 import { ImageUpload } from '@/components/ImageUpload';
 import { LanguageTabs } from '@/components/LanguageTabs';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 
 type MenuTypeRow = {
   id: string;
@@ -102,36 +106,37 @@ export function MenuTypesPage() {
     <div className="space-y-6">
       <div className="flex justify-between items-center flex-wrap gap-4">
         <h1 className="text-2xl font-semibold text-stone-100">{t('admin.menuTypes.title')}</h1>
-        <button onClick={() => setModal('create')} className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium" style={{ backgroundColor: 'var(--color-app-accent)', color: 'var(--color-app-bg)' }}>
+        <Button onClick={() => setModal('create')} className="flex items-center gap-2">
           <Plus className="w-4 h-4" /> {t('common.add')}
-        </button>
+        </Button>
       </div>
 
       <div className="flex items-center gap-3 flex-wrap">
         <form onSubmit={handleSearch} className="flex items-center gap-2 flex-1 min-w-[200px] max-w-sm">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-500" />
-            <input
+            <Input
               type="text"
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               placeholder={t('common.search')}
-              className="w-full pl-9 pr-3 py-2 rounded-lg bg-[var(--color-app-bg)] border border-[var(--color-border)] text-stone-100 text-sm placeholder:text-stone-500 focus:outline-none focus:ring-2 focus:ring-[var(--color-app-accent)]/40"
+              className="pl-9 bg-[var(--color-app-bg)] border-[var(--color-border)] text-stone-100"
             />
           </div>
-          <button type="submit" className="px-3 py-2 rounded-lg text-sm text-stone-400 hover:text-stone-200 hover:bg-white/5 border border-[var(--color-border)]">
+          <Button type="submit" variant="outline" size="icon">
             <Search className="w-4 h-4" />
-          </button>
+          </Button>
         </form>
 
         <div className="flex items-center gap-2">
           <ArrowUpDown className="w-4 h-4 text-stone-500" />
-          <button
+          <Button
+            variant="outline"
+            size="sm"
             onClick={() => { setSortOrder((prev) => prev === 'asc' ? 'desc' : 'asc'); setPage(0); }}
-            className="px-3 py-2 rounded-lg text-sm text-stone-400 hover:text-stone-200 hover:bg-white/5 border border-[var(--color-border)]"
           >
             {sortOrder === 'asc' ? '↑' : '↓'}
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -158,9 +163,15 @@ export function MenuTypesPage() {
                 </td>
                 <td className="px-4 py-3 text-right">
                   <div className="flex items-center justify-end gap-1">
-                    <button onClick={() => translateMu.mutate(item.id)} disabled={translateMu.isPending} className="p-2 text-blue-400 hover:bg-blue-500/10 rounded-lg" title={t('common.translate')}><Languages className="w-4 h-4" /></button>
-                    <button onClick={() => setEditing(item)} className="p-2 text-[var(--color-app-accent)] hover:bg-[var(--color-app-accent)]/10 rounded-lg"><Pencil className="w-4 h-4" /></button>
-                    <button onClick={() => { if (confirm(t('common.confirmDelete'))) deleteMu.mutate(item.id); }} className="p-2 text-red-400 hover:bg-red-500/10 rounded-lg"><Trash2 className="w-4 h-4" /></button>
+                    <Button variant="ghost" size="icon" onClick={() => translateMu.mutate(item.id)} disabled={translateMu.isPending} title={t('common.translate')}>
+                      <Languages className="w-4 h-4 text-blue-400" />
+                    </Button>
+                    <Button variant="ghost" size="icon" onClick={() => setEditing(item)}>
+                      <Pencil className="w-4 h-4 text-[var(--color-app-accent)]" />
+                    </Button>
+                    <Button variant="ghost" size="icon" onClick={() => { if (confirm(t('common.confirmDelete'))) deleteMu.mutate(item.id); }}>
+                      <Trash2 className="w-4 h-4 text-red-400" />
+                    </Button>
                   </div>
                 </td>
               </tr>
@@ -180,21 +191,25 @@ export function MenuTypesPage() {
             {page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, total)} {t('common.of')} {total}
           </p>
           <div className="flex items-center gap-2">
-            <button
+            <Button
+              variant="outline"
+              size="sm"
               onClick={() => setPage((p) => Math.max(0, p - 1))}
               disabled={page === 0}
-              className="flex items-center gap-1 px-3 py-2 rounded-lg text-sm text-stone-400 hover:text-stone-200 hover:bg-white/5 border border-[var(--color-border)] disabled:opacity-40 disabled:cursor-not-allowed"
+              className="flex items-center gap-1"
             >
               <ChevronLeft className="w-4 h-4" /> {t('common.prev')}
-            </button>
+            </Button>
             <span className="text-sm text-stone-400">{page + 1} / {totalPages}</span>
-            <button
+            <Button
+              variant="outline"
+              size="sm"
               onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
               disabled={page >= totalPages - 1}
-              className="flex items-center gap-1 px-3 py-2 rounded-lg text-sm text-stone-400 hover:text-stone-200 hover:bg-white/5 border border-[var(--color-border)] disabled:opacity-40 disabled:cursor-not-allowed"
+              className="flex items-center gap-1"
             >
               {t('common.next')} <ChevronRight className="w-4 h-4" />
-            </button>
+            </Button>
           </div>
         </div>
       )}
@@ -242,32 +257,44 @@ function CreateModal({ languages, onClose }: { languages: Language[]; onClose: (
   };
 
   return (
-    <Modal onClose={onClose}>
-      <h2 className="text-lg font-semibold text-stone-100">{t('admin.menuTypes.newTitle')}</h2>
-      <form onSubmit={handleSubmit} className="space-y-4 mt-4">
-        {createdId && (
-          <ImageUpload
-            entityId={createdId}
-            entityType="menu-type"
-            currentPath={imagePath}
-            onUploaded={(path) => setImagePath(path)}
-          />
-        )}
-        <Field label={t('common.code')} value={code} onChange={setCode} placeholder={t('admin.menuTypes.codePlaceholder')} />
-        {languages.length > 0 && (
-          <LanguageTabs
-            languages={languages}
-            translations={translations}
-            onChange={setTranslations}
-            nameLabel={t('common.name')}
-          />
-        )}
-        <div className="flex gap-2 justify-end">
-          <button type="button" onClick={onClose} className="px-4 py-2 rounded-lg text-sm text-stone-400">{t('common.cancel')}</button>
-          <button type="submit" disabled={loading} className="px-4 py-2 rounded-lg text-sm font-medium" style={{ backgroundColor: 'var(--color-app-accent)', color: 'var(--color-app-bg)' }}>{t('common.create')}</button>
-        </div>
-      </form>
-    </Modal>
+    <Dialog open onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>{t('admin.menuTypes.newTitle')}</DialogTitle>
+        </DialogHeader>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {createdId && (
+            <ImageUpload
+              entityId={createdId}
+              entityType="menu-type"
+              currentPath={imagePath}
+              onUploaded={(path) => setImagePath(path)}
+            />
+          )}
+          <div className="space-y-2">
+            <Label className="text-stone-400">{t('common.code')}</Label>
+            <Input
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+              placeholder={t('admin.menuTypes.codePlaceholder')}
+              className="bg-[var(--color-app-bg)] border-[var(--color-border)] text-stone-100"
+            />
+          </div>
+          {languages.length > 0 && (
+            <LanguageTabs
+              languages={languages}
+              translations={translations}
+              onChange={setTranslations}
+              nameLabel={t('common.name')}
+            />
+          )}
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={onClose}>{t('common.cancel')}</Button>
+            <Button type="submit" disabled={loading}>{t('common.create')}</Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -300,46 +327,40 @@ function EditModal({ item, languages, onClose }: { item: MenuTypeRow; languages:
   };
 
   return (
-    <Modal onClose={onClose}>
-      <h2 className="text-lg font-semibold text-stone-100">{t('admin.menuTypes.editTitle')}</h2>
-      <form onSubmit={handleSubmit} className="space-y-4 mt-4">
-        <ImageUpload
-          entityId={item.id}
-          entityType="menu-type"
-          currentPath={imagePath}
-          onUploaded={(path) => setImagePath(path)}
-        />
-        <Field label={t('common.code')} value={code} onChange={setCode} />
-        {languages.length > 0 && (
-          <LanguageTabs
-            languages={languages}
-            translations={translations}
-            onChange={setTranslations}
-            nameLabel={t('common.name')}
+    <Dialog open onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>{t('admin.menuTypes.editTitle')}</DialogTitle>
+        </DialogHeader>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <ImageUpload
+            entityId={item.id}
+            entityType="menu-type"
+            currentPath={imagePath}
+            onUploaded={(path) => setImagePath(path)}
           />
-        )}
-        <div className="flex gap-2 justify-end">
-          <button type="button" onClick={onClose} className="px-4 py-2 rounded-lg text-sm text-stone-400">{t('common.cancel')}</button>
-          <button type="submit" disabled={loading} className="px-4 py-2 rounded-lg text-sm font-medium" style={{ backgroundColor: 'var(--color-app-accent)', color: 'var(--color-app-bg)' }}>{t('common.save')}</button>
-        </div>
-      </form>
-    </Modal>
-  );
-}
-
-function Modal({ children, onClose }: { children: React.ReactNode; onClose: () => void }) {
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={(e) => e.target === e.currentTarget && onClose()}>
-      <div className="w-full max-w-md max-h-[90vh] overflow-y-auto p-6 rounded-2xl border border-[var(--color-border)] bg-[var(--color-app-panel)]">{children}</div>
-    </div>
-  );
-}
-
-function Field({ label, value, onChange, placeholder, required }: { label: string; value: string; onChange: (v: string) => void; placeholder?: string; required?: boolean }) {
-  return (
-    <div>
-      <label className="block text-sm font-medium text-stone-400 mb-1">{label}</label>
-      <input value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} required={required} className="w-full px-4 py-2 rounded-lg bg-[var(--color-app-bg)] border border-[var(--color-border)] text-stone-100 text-sm placeholder:text-stone-500 focus:outline-none focus:ring-2 focus:ring-[var(--color-app-accent)]/40" />
-    </div>
+          <div className="space-y-2">
+            <Label className="text-stone-400">{t('common.code')}</Label>
+            <Input
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+              className="bg-[var(--color-app-bg)] border-[var(--color-border)] text-stone-100"
+            />
+          </div>
+          {languages.length > 0 && (
+            <LanguageTabs
+              languages={languages}
+              translations={translations}
+              onChange={setTranslations}
+              nameLabel={t('common.name')}
+            />
+          )}
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={onClose}>{t('common.cancel')}</Button>
+            <Button type="submit" disabled={loading}>{t('common.save')}</Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 }

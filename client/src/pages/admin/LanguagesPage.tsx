@@ -5,6 +5,10 @@ import { Plus, Trash2, Globe, Languages, Pencil } from 'lucide-react';
 import { API_BASE, headers, authFetch } from './api';
 import { translateI18nFile } from '@/lib/api';
 import { useTranslations } from '@/i18n';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 
 type Language = { id: string; code: string; name: string | null; sortOrder: number };
 
@@ -53,13 +57,9 @@ export function LanguagesPage() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-semibold text-stone-100">{t('admin.languages.title')}</h1>
-        <button
-          onClick={() => setShowCreate(true)}
-          className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium"
-          style={{ backgroundColor: 'var(--color-app-accent)', color: 'var(--color-app-bg)' }}
-        >
+        <Button onClick={() => setShowCreate(true)} className="flex items-center gap-2">
           <Plus className="w-4 h-4" /> {t('common.add')}
-        </button>
+        </Button>
       </div>
 
       <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-app-panel)] overflow-hidden">
@@ -85,32 +85,38 @@ export function LanguagesPage() {
                 <td className="px-4 py-3 text-stone-100 text-sm">{lang.name}</td>
                 <td className="px-4 py-3 text-right">
                   <div className="flex items-center justify-end gap-1">
-                    <button
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
                       onClick={() => setEditing(lang)}
-                      className="p-2 text-stone-400 hover:text-stone-200 hover:bg-white/5 rounded-lg"
+                      className="text-stone-400 hover:text-stone-200 hover:bg-white/5"
                       title={t('common.edit')}
                     >
                       <Pencil className="w-4 h-4" />
-                    </button>
+                    </Button>
                     {lang.code !== 'ru' && lang.code !== 'en' && (
-                      <button
+                      <Button
+                        variant="ghost"
+                        size="icon-sm"
                         onClick={() => translateMu.mutate(lang.code)}
                         disabled={translateMu.isPending}
-                        className="p-2 text-blue-400 hover:bg-blue-500/10 rounded-lg"
+                        className="text-blue-400 hover:bg-blue-500/10"
                         title={t('common.translate')}
                       >
                         <Languages className="w-4 h-4" />
-                      </button>
+                      </Button>
                     )}
-                    <button
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
                       onClick={() => {
                         if (confirm(t('common.confirmDelete'))) deleteMu.mutate(lang.id);
                       }}
-                      className="p-2 text-red-400 hover:bg-red-500/10 rounded-lg"
+                      className="text-red-400 hover:bg-red-500/10"
                       title={t('common.delete')}
                     >
                       <Trash2 className="w-4 h-4" />
-                    </button>
+                    </Button>
                   </div>
                 </td>
               </tr>
@@ -162,53 +168,50 @@ function LanguageModal({ language, onClose }: { language?: Language; onClose: ()
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={(e) => e.target === e.currentTarget && onClose()}>
-      <div className="w-full max-w-md p-6 rounded-2xl border border-[var(--color-border)] bg-[var(--color-app-panel)]" onClick={(e) => e.stopPropagation()}>
-        <h2 className="text-lg font-semibold text-stone-100">{isEdit ? t('common.edit') : t('admin.languages.newTitle')}</h2>
-        <form onSubmit={handleSubmit} className="space-y-4 mt-4">
+    <Dialog open onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>{isEdit ? t('common.edit') : t('admin.languages.newTitle')}</DialogTitle>
+        </DialogHeader>
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-stone-400 mb-1">{t('common.code')}</label>
-            <input
+            <Label className="text-stone-400">{t('common.code')}</Label>
+            <Input
               value={code}
               onChange={(e) => setCode(e.target.value)}
               placeholder="kk"
               required
               disabled={isEdit}
-              className="w-full px-4 py-2 rounded-lg bg-[var(--color-app-bg)] border border-[var(--color-border)] text-stone-100 placeholder:text-stone-500 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-app-accent)]/40 disabled:opacity-50"
+              className="bg-[var(--color-app-bg)] border-[var(--color-border)] text-stone-100 placeholder:text-stone-500 disabled:opacity-50"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-stone-400 mb-1">{t('common.name')}</label>
-            <input
+            <Label className="text-stone-400">{t('common.name')}</Label>
+            <Input
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Қазақша"
               required
-              className="w-full px-4 py-2 rounded-lg bg-[var(--color-app-bg)] border border-[var(--color-border)] text-stone-100 placeholder:text-stone-500 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-app-accent)]/40"
+              className="bg-[var(--color-app-bg)] border-[var(--color-border)] text-stone-100 placeholder:text-stone-500"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-stone-400 mb-1">{t('common.sort')}</label>
-            <input
+            <Label className="text-stone-400">{t('common.sort')}</Label>
+            <Input
               type="number"
               value={sortOrder}
               onChange={(e) => setSortOrder(Number(e.target.value) || 0)}
-              className="w-full px-4 py-2 rounded-lg bg-[var(--color-app-bg)] border border-[var(--color-border)] text-stone-100 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-app-accent)]/40"
+              className="bg-[var(--color-app-bg)] border-[var(--color-border)] text-stone-100"
             />
           </div>
-          <div className="flex gap-2 justify-end">
-            <button type="button" onClick={onClose} className="px-4 py-2 rounded-lg text-sm text-stone-400 hover:text-stone-200">{t('common.cancel')}</button>
-            <button
-              type="submit"
-              disabled={loading}
-              className="px-4 py-2 rounded-lg text-sm font-medium"
-              style={{ backgroundColor: 'var(--color-app-accent)', color: 'var(--color-app-bg)' }}
-            >
-              {loading ? t('common.loading') : (isEdit ? t('common.save') : t('common.create'))}
-            </button>
-          </div>
         </form>
-      </div>
-    </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose}>{t('common.cancel')}</Button>
+          <Button type="submit" onClick={handleSubmit} disabled={loading}>
+            {loading ? t('common.loading') : (isEdit ? t('common.save') : t('common.create'))}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }

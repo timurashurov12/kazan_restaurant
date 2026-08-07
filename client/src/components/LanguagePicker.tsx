@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { fetchLanguages } from '@/lib/api';
 import { Globe } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
 
 export function LanguagePicker() {
   const { hasSelected, setLocale } = useLocale();
@@ -30,13 +31,14 @@ export function LanguagePicker() {
         </div>
         <div className="space-y-3">
           {languages.map((lang) => (
-            <button
+            <Button
               key={lang.id}
+              variant="outline"
               onClick={() => setLocale(lang.code)}
-              className="w-full py-3 rounded-xl text-sm font-medium transition border border-[var(--color-border)] bg-[var(--color-app-panel)] text-stone-100 hover:border-[var(--color-app-accent)]/40 hover:bg-[var(--color-app-accent)]/10"
+              className="w-full py-3 text-sm font-medium border-[var(--color-border)] bg-[var(--color-app-panel)] text-stone-100 hover:border-[var(--color-app-accent)]/40 hover:bg-[var(--color-app-accent)]/10"
             >
               {lang.name}
-            </button>
+            </Button>
           ))}
         </div>
       </div>

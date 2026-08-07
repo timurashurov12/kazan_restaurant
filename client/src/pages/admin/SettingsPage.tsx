@@ -2,6 +2,9 @@ import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { API_BASE, headers, authFetch } from './api';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 type Settings = {
   siteName: string | null;
@@ -56,27 +59,25 @@ export function SettingsPage() {
     <div className="space-y-6 max-w-lg">
       <h1 className="text-2xl font-semibold text-stone-100">Settings</h1>
       <div className="space-y-4 p-6 rounded-xl border border-[var(--color-border)] bg-[var(--color-app-panel)]">
-        <Field label="Site Name" value={siteName} onChange={setSiteName} placeholder="Kazan Restaurant" />
-        <Field label="Footer Text" value={footerText} onChange={setFooterText} placeholder="Thank you for visiting" />
-        <Field label="Contact Text" value={contactText} onChange={setContactText} placeholder="Phone, address..." />
-        <button
+        <div>
+          <Label className="text-stone-400">Site Name</Label>
+          <Input value={siteName} onChange={(e) => setSiteName(e.target.value)} placeholder="Kazan Restaurant" className="bg-[var(--color-app-bg)] border-[var(--color-border)] text-stone-100 placeholder:text-stone-500" />
+        </div>
+        <div>
+          <Label className="text-stone-400">Footer Text</Label>
+          <Input value={footerText} onChange={(e) => setFooterText(e.target.value)} placeholder="Thank you for visiting" className="bg-[var(--color-app-bg)] border-[var(--color-border)] text-stone-100 placeholder:text-stone-500" />
+        </div>
+        <div>
+          <Label className="text-stone-400">Contact Text</Label>
+          <Input value={contactText} onChange={(e) => setContactText(e.target.value)} placeholder="Phone, address..." className="bg-[var(--color-app-bg)] border-[var(--color-border)] text-stone-100 placeholder:text-stone-500" />
+        </div>
+        <Button
           onClick={() => updateMu.mutate()}
           disabled={updateMu.isPending}
-          className="px-6 py-2 rounded-lg text-sm font-medium"
-          style={{ backgroundColor: 'var(--color-app-accent)', color: 'var(--color-app-bg)' }}
         >
           {updateMu.isPending ? 'Saving...' : 'Save'}
-        </button>
+        </Button>
       </div>
-    </div>
-  );
-}
-
-function Field({ label, value, onChange, placeholder }: { label: string; value: string; onChange: (v: string) => void; placeholder?: string }) {
-  return (
-    <div>
-      <label className="block text-sm font-medium text-stone-400 mb-1">{label}</label>
-      <input value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} className="w-full px-4 py-2 rounded-lg bg-[var(--color-app-bg)] border border-[var(--color-border)] text-stone-100 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-app-accent)]/40" />
     </div>
   );
 }

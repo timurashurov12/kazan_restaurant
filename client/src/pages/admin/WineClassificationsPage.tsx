@@ -1,11 +1,15 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { Plus, Pencil, Trash2, X, Globe, Languages } from 'lucide-react';
+import { Plus, Pencil, Trash2, Globe, Languages } from 'lucide-react';
 import { API_BASE, headers, authFetch } from './api';
 import { translateWineClassification } from '@/lib/api';
 import { useTranslations } from '@/i18n';
 import { LanguageTabs } from '@/components/LanguageTabs';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 
 type ClassificationRow = {
   id: string;
@@ -117,9 +121,9 @@ export function WineClassificationsPage() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-semibold text-stone-100">Классификация вин</h1>
-        <button onClick={openCreate} className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium" style={{ backgroundColor: 'var(--color-app-accent)', color: 'var(--color-app-bg)' }}>
+        <Button onClick={openCreate} className="flex items-center gap-2">
           <Plus className="w-4 h-4" /> {t('common.add')}
-        </button>
+        </Button>
       </div>
 
       <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-app-panel)] overflow-auto">
@@ -140,16 +144,18 @@ export function WineClassificationsPage() {
                 <td className="px-4 py-3 text-stone-100 text-sm">{ruName(cls.translations)}</td>
                 <td className="px-4 py-3 text-right">
                   <div className="flex items-center justify-end gap-1">
-                    <button
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
                       onClick={() => translateMu.mutate(cls.id)}
                       disabled={translateMu.isPending}
-                      className="p-2 text-blue-400 hover:bg-blue-500/10 rounded-lg"
+                      className="text-blue-400 hover:bg-blue-500/10"
                       title={t('common.translate')}
                     >
                       <Languages className="w-4 h-4" />
-                    </button>
-                    <button onClick={() => openEdit(cls)} className="p-2 text-[var(--color-app-accent)] hover:bg-[var(--color-app-accent)]/10 rounded-lg"><Pencil className="w-4 h-4" /></button>
-                    <button onClick={() => { if (confirm(t('common.confirmDelete'))) deleteMu.mutate(cls.id); }} className="p-2 text-red-400 hover:bg-red-500/10 rounded-lg"><Trash2 className="w-4 h-4" /></button>
+                    </Button>
+                    <Button variant="ghost" size="icon-sm" onClick={() => openEdit(cls)} className="text-[var(--color-app-accent)] hover:bg-[var(--color-app-accent)]/10"><Pencil className="w-4 h-4" /></Button>
+                    <Button variant="ghost" size="icon-sm" onClick={() => { if (confirm(t('common.confirmDelete'))) deleteMu.mutate(cls.id); }} className="text-red-400 hover:bg-red-500/10"><Trash2 className="w-4 h-4" /></Button>
                   </div>
                 </td>
               </tr>
@@ -161,44 +167,42 @@ export function WineClassificationsPage() {
         </table>
       </div>
 
-      {modalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={(e) => e.target === e.currentTarget && closeModal()}>
-          <div className="absolute inset-0 bg-black/60" onClick={closeModal} />
-          <div className="relative w-full max-w-lg bg-[var(--color-app-panel)] border border-[var(--color-border)] rounded-2xl p-6 space-y-4 animate-in">
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-stone-100">{editingId ? 'Редактировать классификацию' : 'Новая классификация'}</h2>
-              <button onClick={closeModal} className="p-2 text-stone-400 hover:text-stone-200 rounded-lg hover:bg-white/5"><X className="w-5 h-5" /></button>
-            </div>
+      <Dialog open={modalOpen} onOpenChange={(open) => !open && closeModal()}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>{editingId ? 'Редактировать классификацию' : 'Новая классификация'}</DialogTitle>
+          </DialogHeader>
 
+          <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-stone-400 mb-1">Код (latin)</label>
-                <input value={code} onChange={(e) => setCode(e.target.value)} placeholder="dry" required className="w-full px-4 py-2 rounded-lg bg-[var(--color-app-bg)] border border-[var(--color-border)] text-stone-100 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-app-accent)]/40" />
+                <Label className="text-stone-400">Код (latin)</Label>
+                <Input value={code} onChange={(e) => setCode(e.target.value)} placeholder="dry" required className="bg-[var(--color-app-bg)] border-[var(--color-border)] text-stone-100 placeholder:text-stone-500" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-stone-400 mb-1">{t('common.sort')}</label>
-                <input type="number" value={sortOrder} onChange={(e) => setSortOrder(Number(e.target.value) || 0)} className="w-full px-4 py-2 rounded-lg bg-[var(--color-app-bg)] border border-[var(--color-border)] text-stone-100 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-app-accent)]/40" />
+                <Label className="text-stone-400">{t('common.sort')}</Label>
+                <Input type="number" value={sortOrder} onChange={(e) => setSortOrder(Number(e.target.value) || 0)} className="bg-[var(--color-app-bg)] border-[var(--color-border)] text-stone-100" />
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-stone-400 mb-1 flex items-center gap-1.5"><Globe className="w-3.5 h-3.5" /> Переводы</label>
+              <Label className="text-stone-400 flex items-center gap-1.5"><Globe className="w-3.5 h-3.5" /> Переводы</Label>
               {languages.length > 0 ? (
                 <LanguageTabs languages={languages} translations={translations} onChange={setTranslations} nameLabel="Название" />
               ) : (
                 <p className="text-stone-500 text-sm">{t('common.loading')}</p>
               )}
             </div>
-
-            <div className="flex gap-2 justify-end pt-2 border-t border-[var(--color-border)]">
-              <button onClick={closeModal} className="px-4 py-2 rounded-lg text-sm text-stone-400">{t('common.cancel')}</button>
-              <button onClick={() => saveMu.mutate()} disabled={saveMu.isPending} className="px-6 py-2 rounded-lg text-sm font-medium" style={{ backgroundColor: 'var(--color-app-accent)', color: 'var(--color-app-bg)' }}>
-                {t('common.save')}
-              </button>
-            </div>
           </div>
-        </div>
-      )}
+
+          <DialogFooter>
+            <Button variant="outline" onClick={closeModal}>{t('common.cancel')}</Button>
+            <Button onClick={() => saveMu.mutate()} disabled={saveMu.isPending}>
+              {t('common.save')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -1,4 +1,6 @@
-import { useState } from 'react';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 type Translation = { locale: string; name: string; description?: string | null };
 type Language = { code: string; name: string };
@@ -20,9 +22,7 @@ export function LanguageTabs({
   descriptionLabel = 'Описание',
   nameLabel = 'Название',
 }: LanguageTabsProps) {
-  const [activeTab, setActiveTab] = useState(() => {
-    return languages[0]?.code || '';
-  });
+  const defaultValue = languages[0]?.code || '';
 
   const updateField = (locale: string, field: keyof Translation, value: string) => {
     const idx = translations.findIndex((t) => t.locale === locale);
@@ -34,47 +34,41 @@ export function LanguageTabs({
     }
   };
 
-  const current = translations.find((t) => t.locale === activeTab);
-
   return (
-    <div className="space-y-3">
-      <div className="flex gap-1 border-b border-[var(--color-border)]">
+    <Tabs defaultValue={defaultValue}>
+      <TabsList variant="line" className="w-full justify-start">
         {languages.map((lang) => (
-          <button
-            key={lang.code}
-            type="button"
-            onClick={() => setActiveTab(lang.code)}
-            className={`px-3 py-2 text-sm font-medium border-b-2 transition ${
-              activeTab === lang.code
-                ? 'border-[var(--color-app-accent)] text-[var(--color-app-accent)]'
-                : 'border-transparent text-stone-400 hover:text-stone-200'
-            }`}
-          >
-            {lang.name}
-          </button>
+          <TabsTrigger key={lang.code} value={lang.code}>{lang.name}</TabsTrigger>
         ))}
-      </div>
+      </TabsList>
 
-      <div className="space-y-3">
-        <div>
-          <label className="block text-sm font-medium text-stone-400 mb-1">{nameLabel} ({activeTab.toUpperCase()})</label>
-          <input
-            value={current?.name || ''}
-            onChange={(e) => updateField(activeTab, 'name', e.target.value)}
-            className="w-full px-4 py-2 rounded-lg bg-[var(--color-app-bg)] border border-[var(--color-border)] text-stone-100 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-app-accent)]/40"
-          />
-        </div>
-        {showDescription && (
-          <div>
-            <label className="block text-sm font-medium text-stone-400 mb-1">{descriptionLabel} ({activeTab.toUpperCase()})</label>
-            <input
-              value={current?.description || ''}
-              onChange={(e) => updateField(activeTab, 'description', e.target.value)}
-              className="w-full px-4 py-2 rounded-lg bg-[var(--color-app-bg)] border border-[var(--color-border)] text-stone-100 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-app-accent)]/40"
-            />
-          </div>
-        )}
-      </div>
-    </div>
+      {languages.map((lang) => {
+        const current = translations.find((t) => t.locale === lang.code);
+        return (
+          <TabsContent key={lang.code} value={lang.code}>
+            <div className="space-y-3 pt-3">
+              <div className="space-y-2">
+                <Label className="text-stone-400">{nameLabel} ({lang.code.toUpperCase()})</Label>
+                <Input
+                  value={current?.name || ''}
+                  onChange={(e) => updateField(lang.code, 'name', e.target.value)}
+                  className="bg-[var(--color-app-bg)] border-[var(--color-border)] text-stone-100"
+                />
+              </div>
+              {showDescription && (
+                <div className="space-y-2">
+                  <Label className="text-stone-400">{descriptionLabel} ({lang.code.toUpperCase()})</Label>
+                  <Input
+                    value={current?.description || ''}
+                    onChange={(e) => updateField(lang.code, 'description', e.target.value)}
+                    className="bg-[var(--color-app-bg)] border-[var(--color-border)] text-stone-100"
+                  />
+                </div>
+              )}
+            </div>
+          </TabsContent>
+        );
+      })}
+    </Tabs>
   );
 }
