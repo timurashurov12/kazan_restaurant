@@ -1,5 +1,5 @@
 import { Outlet, Navigate, Link, useLocation } from 'react-router-dom';
-import { LogOut, LayoutGrid, List, Package, Globe, Settings, MapPin, Wine } from 'lucide-react';
+import { LogOut, LayoutGrid, List, Package, Globe, MapPin, Wine } from 'lucide-react';
 import { I18nProvider, useTranslations } from '@/i18n';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 
@@ -33,7 +33,7 @@ function AdminLayoutInner() {
     { path: '/admin/languages', label: t('admin.nav.languages'), icon: Globe },
     { path: '/admin/regions', label: t('admin.nav.regions'), icon: MapPin },
     { path: '/admin/wine-classifications', label: t('admin.nav.wineClassifications'), icon: Wine },
-    { path: '/admin/settings', label: t('admin.nav.settings'), icon: Settings },
+
   ];
 
   const handleLogout = () => {
