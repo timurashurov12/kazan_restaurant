@@ -194,7 +194,7 @@ export function MenuItemsPage() {
                 </td>
                 <td className="px-4 py-3">
                   {item.imagePath ? (
-                    <img src={`${API_BASE}/uploads/${item.imagePath}`} alt="" className="w-12 h-12 rounded-lg object-cover" />
+                    <img src={`${API_BASE}${item.imagePath}`} alt="" className="w-12 h-12 rounded-lg object-cover" />
                   ) : (
                     <div className="w-12 h-12 rounded-lg bg-[var(--color-app-bg)] border border-[var(--color-border)] flex items-center justify-center">
                       <ImageOff className="w-4 h-4 text-stone-600" />
