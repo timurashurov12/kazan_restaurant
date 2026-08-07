@@ -35,7 +35,7 @@ export class CategoriesService {
         orderBy,
         skip,
         take,
-        include: { translations: true },
+        include: { translations: true, menuType: { include: { translations: true } } },
       }),
       this.prisma.category.count({ where }),
     ]);
@@ -46,7 +46,7 @@ export class CategoriesService {
   async findOne(id: string) {
     const cat = await this.prisma.category.findUnique({
       where: { id },
-      include: { translations: true },
+      include: { translations: true, menuType: { include: { translations: true } } },
     });
     if (!cat) throw new NotFoundException('Category not found');
     return cat;

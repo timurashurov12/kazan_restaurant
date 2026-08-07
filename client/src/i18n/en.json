@@ -43,7 +43,9 @@
     "region": "Region",
     "wineClassification": "Wine Classification",
     "extraPrices": "Extra Prices (Glass, Shot)",
-    "badges": "Badges"
+    "badges": "Badges",
+    "dragOrClick": "Drag or click",
+    "dropHere": "Drop to upload"
   },
   "home": {
     "title": "Our Menu",

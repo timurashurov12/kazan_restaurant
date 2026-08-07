@@ -43,7 +43,9 @@
     "region": "",
     "wineClassification": "",
     "extraPrices": "",
-    "badges": ""
+    "badges": "",
+    "dragOrClick": "拖放或点击",
+    "dropHere": "释放以上传"
   },
   "home": {
     "title": "",
