@@ -35,6 +35,9 @@ export function HomePage() {
             </button>
           </div>
           <img src="/logo.svg" alt="Kazan" className="mx-auto h-16 w-auto mb-4" />
+          <p className="text-sm text-stone-400 leading-relaxed max-w-md mx-auto mb-6">
+            {t('home.welcome')}
+          </p>
           <h1 className="text-2xl font-semibold leading-tight text-stone-50">
             {t('home.title')}
           </h1>

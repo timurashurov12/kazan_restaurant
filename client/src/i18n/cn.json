@@ -51,7 +51,8 @@
     "title": "",
     "restaurantName": "",
     "mainMenu": "",
-    "barMenu": ""
+    "barMenu": "",
+    "welcome": "欢迎来到喀山餐厅——传统与美味的交汇之处。探索正宗的乌兹别克美食，用心烹制，传承古法。"
   },
   "languagePicker": {
     "title": "",
