@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { Plus, Pencil, Trash2, Languages, ChevronLeft, ChevronRight, Search, SlidersHorizontal, X } from 'lucide-react';
+import { Plus, Pencil, Trash2, Languages, ChevronLeft, ChevronRight, Search, SlidersHorizontal, X, ImageOff } from 'lucide-react';
 import { API_BASE, headers, authFetch } from './api';
 import { translateMenuItem } from '@/lib/api';
 import { useTranslations } from '@/i18n';
@@ -51,6 +51,21 @@ export function MenuItemsPage() {
         next.set(key, value);
       } else {
         next.delete(key);
+      }
+      return next;
+    }, { replace: true });
+  };
+
+  /** Set multiple params in a single setSearchParams call to avoid stale closure issues in react-router v7 */
+  const setParams = (updates: Record<string, string>) => {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      for (const [key, value] of Object.entries(updates)) {
+        if (value) {
+          next.set(key, value);
+        } else {
+          next.delete(key);
+        }
       }
       return next;
     }, { replace: true });
@@ -111,8 +126,7 @@ export function MenuItemsPage() {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    setParam('search', searchInput);
-    setParam('page', '0');
+    setParams({ search: searchInput, page: '0' });
   };
 
   return (
@@ -157,10 +171,11 @@ export function MenuItemsPage() {
         <table className="w-full">
           <thead>
             <tr className="border-b border-[var(--color-border)]">
-              <SortHeader label={t('common.sort')} field="sortOrder" sortBy={sortBy} sortOrder={sortOrder} onSort={(field, order) => { setParam('sortBy', field); setParam('sortOrder', order); setParam('page', '0'); }} />
+              <SortHeader label={t('common.sort')} field="sortOrder" sortBy={sortBy} sortOrder={sortOrder} onSort={(field, order) => { setParams({ sortBy: field, sortOrder: order, page: '0' }); }} />
               <th className="px-4 py-3 text-left text-xs font-medium text-stone-400 uppercase">{t('common.name')}</th>
-              <SortHeader label={t('admin.categories.title')} field="category" sortBy={sortBy} sortOrder={sortOrder} onSort={(field, order) => { setParam('sortBy', field); setParam('sortOrder', order); setParam('page', '0'); }} />
-              <SortHeader label={t('common.price')} field="price" sortBy={sortBy} sortOrder={sortOrder} onSort={(field, order) => { setParam('sortBy', field); setParam('sortOrder', order); setParam('page', '0'); }} align="right" />
+              <th className="px-4 py-3 text-left text-xs font-medium text-stone-400 uppercase">{t('common.image')}</th>
+              <SortHeader label={t('admin.categories.title')} field="category" sortBy={sortBy} sortOrder={sortOrder} onSort={(field, order) => { setParams({ sortBy: field, sortOrder: order, page: '0' }); }} />
+              <SortHeader label={t('common.price')} field="price" sortBy={sortBy} sortOrder={sortOrder} onSort={(field, order) => { setParams({ sortBy: field, sortOrder: order, page: '0' }); }} align="right" />
               <th className="px-4 py-3 text-right text-xs font-medium text-stone-400 uppercase">{t('common.weight')}</th>
               <th className="px-4 py-3 text-right text-xs font-medium text-stone-400 uppercase">{t('common.actions')}</th>
             </tr>
@@ -176,6 +191,15 @@ export function MenuItemsPage() {
                       <span className="text-sm">{tr.name}</span>
                     </div>
                   ))}
+                </td>
+                <td className="px-4 py-3">
+                  {item.imagePath ? (
+                    <img src={`${API_BASE}/uploads/${item.imagePath}`} alt="" className="w-12 h-12 rounded-lg object-cover" />
+                  ) : (
+                    <div className="w-12 h-12 rounded-lg bg-[var(--color-app-bg)] border border-[var(--color-border)] flex items-center justify-center">
+                      <ImageOff className="w-4 h-4 text-stone-600" />
+                    </div>
+                  )}
                 </td>
                 <td className="px-4 py-3 text-stone-400 text-sm">
                   {item.category?.translations?.find((tr) => tr.locale === 'ru')?.name || '—'}
@@ -193,7 +217,7 @@ export function MenuItemsPage() {
             ))}
             {list.length === 0 && !isLoading && (
               <tr>
-                <td colSpan={6} className="px-4 py-8 text-center text-stone-500 text-sm">{t('common.noResults')}</td>
+                <td colSpan={7} className="px-4 py-8 text-center text-stone-500 text-sm">{t('common.noResults')}</td>
               </tr>
             )}
           </tbody>
@@ -240,7 +264,7 @@ export function MenuItemsPage() {
                 <label className="block text-sm font-medium text-stone-400 mb-2">{t('admin.categories.title')}</label>
                 <div className="space-y-1">
                   <button
-                    onClick={() => { setParam('categoryId', ''); setParam('page', '0'); setFilterOpen(false); }}
+                    onClick={() => { setParams({ categoryId: '', page: '0' }); setFilterOpen(false); }}
                     className={`w-full text-left px-3 py-2 rounded-lg text-sm transition ${
                       !filterCategoryId
                         ? 'bg-[var(--color-app-accent)]/15 text-[var(--color-app-accent)]'
@@ -252,7 +276,7 @@ export function MenuItemsPage() {
                   {categories.map((c) => (
                     <button
                       key={c.id}
-                      onClick={() => { setParam('categoryId', c.id); setParam('page', '0'); setFilterOpen(false); }}
+                      onClick={() => { setParams({ categoryId: c.id, page: '0' }); setFilterOpen(false); }}
                       className={`w-full text-left px-3 py-2 rounded-lg text-sm transition ${
                         filterCategoryId === c.id
                           ? 'bg-[var(--color-app-accent)]/15 text-[var(--color-app-accent)]'
