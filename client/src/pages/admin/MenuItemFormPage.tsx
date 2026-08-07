@@ -180,10 +180,10 @@ export function MenuItemFormPage() {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Top: Image + Main info side by side */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left: form fields */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Section: Main info */}
+          {/* Left: Main info (2/3) */}
+          <div className="lg:col-span-2">
             <FormSection icon={Settings} title={t('common.mainInfo')}>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="sm:col-span-2">
@@ -252,18 +252,43 @@ export function MenuItemFormPage() {
                 </div>
               </div>
             </FormSection>
+          </div>
 
-            {/* Section: Additional Prices */}
+          {/* Right: Image (1/3) */}
+          <div>
+            <FormSection icon={ImageIcon} title={t('common.image')}>
+              {(isEdit || createdId) ? (
+                <ImageUpload
+                  entityId={createdId || id || ''}
+                  entityType="menu-item"
+                  currentPath={imagePath}
+                  onUploaded={(path) => setImagePath(path)}
+                />
+              ) : (
+                <p className="text-stone-500 text-sm">{t('admin.menuItems.imageAfterSave')}</p>
+              )}
+            </FormSection>
+          </div>
+        </div>
+
+        {/* Bottom: Extra prices, Badges, Translations — compact single column */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Extra Prices */}
+          <div>
             <FormSection icon={CircleDollarSign} title={t('common.extraPrices')}>
               <PricesEditor value={prices} onChange={setPrices} />
             </FormSection>
+          </div>
 
-            {/* Section: Badges */}
+          {/* Badges */}
+          <div>
             <FormSection icon={Tag} title={t('common.badges')}>
               <BadgePicker value={badges} onChange={setBadges} />
             </FormSection>
+          </div>
 
-            {/* Section: Translations */}
+          {/* Translations */}
+          <div>
             <FormSection icon={Languages} title={t('common.translations')}>
               {languages.length > 0 ? (
                 <LanguageTabs
@@ -276,22 +301,6 @@ export function MenuItemFormPage() {
                 />
               ) : (
                 <p className="text-stone-500 text-sm">{t('common.loading')}</p>
-              )}
-            </FormSection>
-          </div>
-
-          {/* Right: image */}
-          <div className="space-y-6">
-            <FormSection icon={ImageIcon} title={t('common.image')}>
-              {(isEdit || createdId) ? (
-                <ImageUpload
-                  entityId={createdId || id || ''}
-                  entityType="menu-item"
-                  currentPath={imagePath}
-                  onUploaded={(path) => setImagePath(path)}
-                />
-              ) : (
-                <p className="text-stone-500 text-sm">{t('admin.menuItems.imageAfterSave')}</p>
               )}
             </FormSection>
           </div>
@@ -311,7 +320,7 @@ export function MenuItemFormPage() {
 
 function FormSection({ icon: Icon, title, children }: { icon: React.ComponentType<{ className?: string }>; title: string; children: React.ReactNode }) {
   return (
-    <div className="p-5 rounded-2xl border border-[var(--color-border)] bg-[var(--color-app-panel)]">
+    <div className="p-5 rounded-2xl border border-[var(--color-border)] bg-[var(--color-app-panel)] h-full">
       <div className="flex items-center gap-2 mb-4">
         <Icon className="w-4 h-4 text-[var(--color-app-accent)]" />
         <h2 className="text-sm font-semibold text-stone-200 uppercase tracking-wide">{title}</h2>
@@ -329,5 +338,3 @@ function Field({ label, value, onChange, required, placeholder }: { label: strin
     </div>
   );
 }
-
-
