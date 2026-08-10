@@ -14,6 +14,7 @@ import { MenuItemFormPage } from '@/pages/admin/MenuItemFormPage';
 import { LanguagesPage } from '@/pages/admin/LanguagesPage';
 import { RegionsPage } from '@/pages/admin/RegionsPage';
 import { WineClassificationsPage } from './pages/admin/WineClassificationsPage';
+import { SettingsPage } from './pages/admin/SettingsPage';
 
 export default function App() {
   return (
@@ -35,6 +36,7 @@ export default function App() {
           <Route path="languages" element={<LanguagesPage />} />
           <Route path="regions" element={<RegionsPage />} />
           <Route path="wine-classifications" element={<WineClassificationsPage />} />
+          <Route path="settings" element={<SettingsPage />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
