@@ -50,10 +50,13 @@ export function CategoriesPage() {
           <div className="grid gap-4 sm:grid-cols-2">
             {categories?.map((category) => {
               const img = publicUploadUrl(category.imagePath);
+              const targetUrl = category.hasClassifications
+                ? `/menu/${menuTypeCode}/category/${category.code}/classifications`
+                : `/menu/${menuTypeCode}/category/${category.code}`;
               return (
                 <Link
                   key={category.id}
-                  to={`/menu/${menuTypeCode}/category/${category.code}`}
+                  to={targetUrl}
                   className="group flex flex-col overflow-hidden rounded-2xl border border-white/[0.07] bg-gradient-to-br from-stone-900/50 via-[var(--color-app-panel)]/30 to-stone-950/40 shadow-lg transition-all duration-200 hover:border-[var(--color-app-accent)]/25"
                 >
                   {img ? (

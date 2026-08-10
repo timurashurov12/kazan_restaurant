@@ -53,6 +53,7 @@ export type CategoryDto = {
   name: string;
   description: string | null;
   imagePath: string | null;
+  hasClassifications: boolean;
 };
 
 export async function fetchCategories(menuTypeCode: string, locale: string) {
@@ -68,6 +69,34 @@ export async function fetchCategoryItems(menuTypeCode: string, categoryCode: str
     `${API_BASE}/menu/${encodeURIComponent(menuTypeCode)}/categories/${encodeURIComponent(categoryCode)}/items?locale=${encodeURIComponent(locale)}`,
   );
   if (!res.ok) throw new Error('Failed to fetch category items');
+  return res.json() as Promise<MenuItemDto[]>;
+}
+
+export type WineClassificationDto = {
+  id: string;
+  code: string;
+  name: string;
+  itemCount: number;
+};
+
+export async function fetchWineClassifications(menuTypeCode: string, categoryCode: string, locale: string) {
+  const res = await fetch(
+    `${API_BASE}/menu/${encodeURIComponent(menuTypeCode)}/categories/${encodeURIComponent(categoryCode)}/classifications?locale=${encodeURIComponent(locale)}`,
+  );
+  if (!res.ok) throw new Error('Failed to fetch wine classifications');
+  return res.json() as Promise<WineClassificationDto[]>;
+}
+
+export async function fetchClassificationItems(
+  menuTypeCode: string,
+  categoryCode: string,
+  classificationCode: string,
+  locale: string,
+) {
+  const res = await fetch(
+    `${API_BASE}/menu/${encodeURIComponent(menuTypeCode)}/categories/${encodeURIComponent(categoryCode)}/classifications/${encodeURIComponent(classificationCode)}/items?locale=${encodeURIComponent(locale)}`,
+  );
+  if (!res.ok) throw new Error('Failed to fetch classification items');
   return res.json() as Promise<MenuItemDto[]>;
 }
 

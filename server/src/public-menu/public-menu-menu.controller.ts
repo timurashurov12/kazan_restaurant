@@ -46,4 +46,27 @@ export class PublicMenuController2 {
   ) {
     return this.publicMenuService.getCategoryItemsByCode(menuTypeCode, categoryCode, locale);
   }
+
+  @Get(':menuTypeCode/categories/:categoryCode/classifications')
+  @ApiOperation({ summary: 'Get wine classifications by category code (public)' })
+  @ApiQuery({ name: 'locale', required: false, default: 'ru' })
+  getWineClassifications(
+    @Param('menuTypeCode') menuTypeCode: string,
+    @Param('categoryCode') categoryCode: string,
+    @Query('locale') locale = 'ru',
+  ) {
+    return this.publicMenuService.getWineClassificationsByCategoryCode(menuTypeCode, categoryCode, locale);
+  }
+
+  @Get(':menuTypeCode/categories/:categoryCode/classifications/:classificationCode/items')
+  @ApiOperation({ summary: 'Get items by category and classification code (public)' })
+  @ApiQuery({ name: 'locale', required: false, default: 'ru' })
+  getClassificationItems(
+    @Param('menuTypeCode') menuTypeCode: string,
+    @Param('categoryCode') categoryCode: string,
+    @Param('classificationCode') classificationCode: string,
+    @Query('locale') locale = 'ru',
+  ) {
+    return this.publicMenuService.getCategoryItemsByClassificationCode(menuTypeCode, categoryCode, classificationCode, locale);
+  }
 }

@@ -37,6 +37,14 @@ export type CategoryPublicDto = {
   name: string;
   description: string | null;
   imagePath: string | null;
+  hasClassifications: boolean;
+};
+
+export type WineClassificationPublicDto = {
+  id: string;
+  code: string;
+  name: string;
+  itemCount: number;
 };
 
 const CACHE_TTL_MS = 60 * 1000;
@@ -201,6 +209,18 @@ export class PublicMenuService {
       include: { translations: true },
     });
 
+    const categoryIds = categories.map((c) => c.id);
+    const classificationsCount = await this.prisma.menuItem.groupBy({
+      by: ['categoryId'],
+      where: {
+        categoryId: { in: categoryIds },
+        isActive: true,
+        classificationId: { not: null },
+      },
+      _count: { id: true },
+    });
+    const clsCountMap = new Map(classificationsCount.map((r) => [r.categoryId, r._count.id]));
+
     const result = categories.map((cat) => {
       const catTr =
         cat.translations.find((r) => r.locale === locale) || cat.translations[0];
@@ -210,6 +230,7 @@ export class PublicMenuService {
         name: catTr?.name ?? '',
         description: catTr?.description ?? null,
         imagePath: cat.imagePath ?? null,
+        hasClassifications: (clsCountMap.get(cat.id) ?? 0) > 0,
       };
     });
 
@@ -296,5 +317,123 @@ export class PublicMenuService {
     if (!cat) return null;
 
     return this.getCategoryItems(cat.id, locale);
+  }
+
+  async getWineClassificationsByCategoryCode(
+    menuTypeCode: string,
+    categoryCode: string,
+    locale: string,
+  ): Promise<WineClassificationPublicDto[] | null> {
+    const key = `wine-cls:${menuTypeCode}:${categoryCode}:${locale}`;
+    const cached = getCached<WineClassificationPublicDto[]>(key);
+    if (cached) return cached;
+
+    const type = await this.prisma.menuType.findFirst({
+      where: { code: menuTypeCode, isActive: true, menu: { isActive: true } },
+    });
+    if (!type) return null;
+
+    const cat = await this.prisma.category.findFirst({
+      where: { code: categoryCode, menuTypeId: type.id, isActive: true },
+    });
+    if (!cat) return null;
+
+    const items = await this.prisma.menuItem.findMany({
+      where: { categoryId: cat.id, isActive: true, classificationId: { not: null } },
+      include: {
+        classification: { include: { translations: true } },
+      },
+    });
+
+    const classificationMap = new Map<string, { id: string; code: string; name: string; itemCount: number }>();
+
+    for (const item of items) {
+      if (!item.classification) continue;
+      const cls = item.classification;
+      const existing = classificationMap.get(cls.id);
+      if (existing) {
+        existing.itemCount++;
+      } else {
+        const tr = cls.translations.find((t) => t.locale === locale) || cls.translations[0];
+        classificationMap.set(cls.id, {
+          id: cls.id,
+          code: cls.code,
+          name: tr?.name ?? cls.code,
+          itemCount: 1,
+        });
+      }
+    }
+
+    const result = Array.from(classificationMap.values()).sort((a, b) => a.name.localeCompare(b.name));
+    setCache(key, result);
+    return result;
+  }
+
+  async getCategoryItemsByClassificationCode(
+    menuTypeCode: string,
+    categoryCode: string,
+    classificationCode: string,
+    locale: string,
+  ): Promise<MenuItemPublicDto[] | null> {
+    const key = `cat-items-cls:${menuTypeCode}:${categoryCode}:${classificationCode}:${locale}`;
+    const cached = getCached<MenuItemPublicDto[]>(key);
+    if (cached) return cached;
+
+    const type = await this.prisma.menuType.findFirst({
+      where: { code: menuTypeCode, isActive: true, menu: { isActive: true } },
+    });
+    if (!type) return null;
+
+    const cat = await this.prisma.category.findFirst({
+      where: { code: categoryCode, menuTypeId: type.id, isActive: true },
+    });
+    if (!cat) return null;
+
+    const classification = await this.prisma.wineClassification.findFirst({
+      where: { code: classificationCode, isActive: true },
+    });
+    if (!classification) return null;
+
+    const items = await this.prisma.menuItem.findMany({
+      where: {
+        categoryId: cat.id,
+        isActive: true,
+        classificationId: classification.id,
+      },
+      orderBy: { sortOrder: 'asc' },
+      include: {
+        translations: true,
+        region: { include: { translations: true } },
+        classification: { include: { translations: true } },
+      },
+    });
+
+    const result = items.map((item) => {
+      const itemTr =
+        item.translations.find((r) => r.locale === locale) || item.translations[0];
+      const regionTr = item.region
+        ? item.region.translations.find((r) => r.locale === locale) || item.region.translations[0]
+        : null;
+      const classificationTr = item.classification
+        ? item.classification.translations.find((r) => r.locale === locale) || item.classification.translations[0]
+        : null;
+      return {
+        id: item.id,
+        name: itemTr?.name ?? '',
+        description: itemTr?.description ?? null,
+        price: Number(item.price),
+        prices: item.prices as Record<string, number> | null,
+        badges: item.badges as string[] | null,
+        weightOrVolume: item.weightOrVolume,
+        imagePath: item.imagePath ?? null,
+        region: item.region ? { id: item.region.id, name: regionTr?.name ?? '' } : null,
+        classification: item.classification
+          ? { id: item.classification.id, name: classificationTr?.name ?? '', code: item.classification.code }
+          : null,
+      };
+    });
+
+    setCache(key, result);
+    return result;
   }
 }
