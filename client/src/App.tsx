@@ -13,8 +13,9 @@ import { MenuItemsPage } from '@/pages/admin/MenuItemsPage';
 import { MenuItemFormPage } from '@/pages/admin/MenuItemFormPage';
 import { LanguagesPage } from '@/pages/admin/LanguagesPage';
 import { RegionsPage } from '@/pages/admin/RegionsPage';
-import { WineClassificationsPage } from './pages/admin/WineClassificationsPage';
+import { WineClassificationsPage as AdminWineClassificationsPage } from './pages/admin/WineClassificationsPage';
 import { SettingsPage } from './pages/admin/SettingsPage';
+import { WineClassificationsPage } from './pages/WineClassificationsPage';
 
 export default function App() {
   return (
@@ -25,6 +26,8 @@ export default function App() {
         <Route path="/" element={<HomePage />} />
         <Route path="/menu/:menuTypeCode" element={<CategoriesPage />} />
         <Route path="/menu/:menuTypeCode/category/:categoryCode" element={<MenuPage />} />
+        <Route path="/menu/:menuTypeCode/category/:categoryCode/classification/:classificationCode" element={<WineClassificationsPage />} />
+        <Route path="/menu/:menuTypeCode/category/:categoryCode/classifications" element={<WineClassificationsPage />} />
         <Route path="/admin/login" element={<LoginPage />} />
         <Route path="/admin/*" element={<AdminLayout />}>
           <Route index element={<Navigate to="/admin/menu-types" replace />} />
@@ -35,7 +38,7 @@ export default function App() {
           <Route path="menu-items/:id/edit" element={<MenuItemFormPage />} />
           <Route path="languages" element={<LanguagesPage />} />
           <Route path="regions" element={<RegionsPage />} />
-          <Route path="wine-classifications" element={<WineClassificationsPage />} />
+          <Route path="wine-classifications" element={<AdminWineClassificationsPage />} />
           <Route path="settings" element={<SettingsPage />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
