@@ -11,6 +11,13 @@ const BADGE_ICONS: Record<string, { icon: React.ComponentType<{ className?: stri
   top: { icon: Star, color: 'text-amber-400', bg: 'bg-amber-500/15', label: 'Top' },
 };
 
+const WINE_COLOR_MAP: Record<string, { bg: string; title: string }> = {
+  red: { bg: 'bg-red-500', title: 'Красное' },
+  white: { bg: 'bg-amber-200', title: 'Белое' },
+  rose: { bg: 'bg-pink-400', title: 'Розовое' },
+  sparkling: { bg: 'bg-yellow-300', title: 'Игристое' },
+};
+
 const PRICE_LABELS: Record<string, Record<string, string>> = {
   glass: { ru: 'Бокал', en: 'Glass' },
   shot: { ru: 'Стопка', en: 'Shot' },
@@ -132,7 +139,10 @@ function ClassificationsListView({
                   <Folder className="h-14 w-14 text-[var(--color-app-accent)]/22" strokeWidth={1.1} />
                 </div>
                 <div className="flex items-center justify-between border-t border-white/6 bg-black/15 px-4 py-4">
-                  <span className="text-base font-semibold text-stone-100">
+                  <span className="flex items-center gap-2 text-base font-semibold text-stone-100">
+                    {WINE_COLOR_MAP[cls.code] && (
+                      <span className={`w-3 h-3 rounded-full shrink-0 ${WINE_COLOR_MAP[cls.code].bg}`} />
+                    )}
                     {cls.name}
                   </span>
                   <span className="text-xs text-stone-500">

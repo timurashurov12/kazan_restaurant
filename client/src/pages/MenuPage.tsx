@@ -11,6 +11,13 @@ const BADGE_ICONS: Record<string, { icon: React.ComponentType<{ className?: stri
   top: { icon: Star, color: 'text-amber-400', bg: 'bg-amber-500/15', label: 'Top' },
 };
 
+const WINE_COLOR_MAP: Record<string, { bg: string; title: string }> = {
+  red: { bg: 'bg-red-500', title: 'Красное' },
+  white: { bg: 'bg-amber-200', title: 'Белое' },
+  rose: { bg: 'bg-pink-400', title: 'Розовое' },
+  sparkling: { bg: 'bg-yellow-300', title: 'Игристое' },
+};
+
 const PRICE_LABELS: Record<string, Record<string, string>> = {
   glass: { ru: 'Бокал', en: 'Glass' },
   shot: { ru: 'Стопка', en: 'Shot' },
@@ -175,7 +182,10 @@ export function MenuPage() {
                             })}
                           </div>
                           {item.classification && (
-                            <span className="inline-block text-[10px] font-medium uppercase tracking-wider text-stone-500 bg-stone-800/60 px-1.5 py-0.5 rounded">
+                            <span className="inline-flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-wider text-stone-500 bg-stone-800/60 px-1.5 py-0.5 rounded">
+                              {WINE_COLOR_MAP[item.classification.code] && (
+                                <span className={`w-2 h-2 rounded-full shrink-0 ${WINE_COLOR_MAP[item.classification.code].bg}`} title={WINE_COLOR_MAP[item.classification.code].title} />
+                              )}
                               {item.classification.name}
                             </span>
                           )}
@@ -279,7 +289,10 @@ function ItemModal({ item, onClose, numberLocale, currencyLabel, locale }: { ite
               })}
             </div>
             {item.classification && (
-              <span className="inline-block mt-1 text-xs font-medium uppercase tracking-wider text-stone-500 bg-stone-800/60 px-2 py-0.5 rounded">
+              <span className="inline-flex items-center gap-1.5 mt-1 text-xs font-medium uppercase tracking-wider text-stone-500 bg-stone-800/60 px-2 py-0.5 rounded">
+                {WINE_COLOR_MAP[item.classification.code] && (
+                  <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${WINE_COLOR_MAP[item.classification.code].bg}`} title={WINE_COLOR_MAP[item.classification.code].title} />
+                )}
                 {item.classification.name}
               </span>
             )}
