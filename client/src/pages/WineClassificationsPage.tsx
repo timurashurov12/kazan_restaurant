@@ -4,7 +4,7 @@ import { useLocale } from '@/context/LocaleContext';
 import { useTranslations } from '@/i18n';
 import { fetchWineClassifications, fetchClassificationItems, publicUploadUrl, type MenuItemDto } from '@/lib/api';
 import { useState, useMemo, useEffect } from 'react';
-import { ArrowLeft, Folder, ChefHat, Search, X, Leaf, Star } from 'lucide-react';
+import { ArrowLeft, Folder, LayoutGrid, ChefHat, Search, X, Leaf, Star } from 'lucide-react';
 
 const BADGE_ICONS: Record<string, { icon: React.ComponentType<{ className?: string }>; color: string; bg: string; label: string }> = {
   vegetarian: { icon: Leaf, color: 'text-emerald-400', bg: 'bg-emerald-500/15', label: 'Vegetarian' },
@@ -91,7 +91,7 @@ function ClassificationsListView({
 }) {
   const { t } = useTranslations();
 
-  const { data: classifications, isLoading } = useQuery({
+  const { data: classifications, isLoading, isError } = useQuery({
     queryKey: ['wine-classifications', menuTypeCode, categoryCode, locale],
     queryFn: () => fetchWineClassifications(menuTypeCode, categoryCode, locale),
     enabled: !!menuTypeCode && !!categoryCode,
@@ -125,10 +125,21 @@ function ClassificationsListView({
           </Link>
         </div>
 
-        {classifications && classifications.length === 0 ? (
-          <p className="text-stone-400 text-center py-12">{t('common.emptySection')}</p>
+        {isError ? (
+          <p className="text-stone-400 text-center py-12">{t('common.loadError')}</p>
         ) : (
           <div className="grid gap-4 sm:grid-cols-2">
+            <Link
+              to={`/menu/${menuTypeCode}/category/${categoryCode}`}
+              className="group flex flex-col overflow-hidden rounded-2xl border border-white/[0.07] bg-gradient-to-br from-stone-900/50 via-[var(--color-app-panel)]/30 to-stone-950/40 shadow-lg transition-all duration-200 hover:border-[var(--color-app-accent)]/25"
+            >
+              <div className="flex aspect-[5/3] w-full items-center justify-center bg-gradient-to-br from-stone-800/90 to-stone-950">
+                <LayoutGrid className="h-14 w-14 text-[var(--color-app-accent)]/22" strokeWidth={1.1} />
+              </div>
+              <div className="flex items-center justify-between border-t border-white/6 bg-black/15 px-4 py-4">
+                <span className="text-base font-semibold text-stone-100">{t('common.allItems')}</span>
+              </div>
+            </Link>
             {classifications?.map((cls) => (
               <Link
                 key={cls.id}
@@ -173,7 +184,7 @@ function ClassificationItemsView({
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedItem, setSelectedItem] = useState<MenuItemDto | null>(null);
 
-  const { data: items, isLoading } = useQuery({
+  const { data: items, isLoading, isError } = useQuery({
     queryKey: ['classification-items', menuTypeCode, categoryCode, classificationCode, locale],
     queryFn: () => fetchClassificationItems(menuTypeCode, categoryCode, classificationCode, locale),
     enabled: !!menuTypeCode && !!categoryCode && !!classificationCode,
@@ -232,7 +243,9 @@ function ClassificationItemsView({
           </Link>
         </div>
 
-        {isEmpty ? (
+        {isError ? (
+          <p className="text-stone-400 text-center py-12">{t('common.loadError')}</p>
+        ) : isEmpty ? (
           <p className="text-stone-400 text-center py-12">{t('common.emptySection')}</p>
         ) : (
           <>
