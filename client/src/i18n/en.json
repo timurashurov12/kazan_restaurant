@@ -16,6 +16,8 @@
     "emptySection": "No items in this section yet.",
     "emptyMenu": "Menu not configured yet.",
     "emptyCategories": "No categories configured yet.",
+    "allItems": "All items",
+    "loadError": "Failed to load data.",
     "confirmDelete": "Delete?",
     "translated": "Translated: {{count}} languages",
     "translationError": "Translation error",

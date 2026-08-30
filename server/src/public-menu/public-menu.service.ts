@@ -215,7 +215,7 @@ export class PublicMenuService {
       where: {
         categoryId: { in: categoryIds },
         isActive: true,
-        classificationId: { not: null },
+        classification: { isActive: true },
       },
       _count: { id: true },
     });
@@ -339,7 +339,7 @@ export class PublicMenuService {
     if (!cat) return null;
 
     const items = await this.prisma.menuItem.findMany({
-      where: { categoryId: cat.id, isActive: true, classificationId: { not: null } },
+      where: { categoryId: cat.id, isActive: true, classification: { isActive: true } },
       include: {
         classification: { include: { translations: true } },
       },

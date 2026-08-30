@@ -16,6 +16,8 @@
     "emptySection": "В этом разделе пока нет позиций.",
     "emptyMenu": "Меню пока не настроено.",
     "emptyCategories": "Категории пока не настроены.",
+    "allItems": "Все позиции",
+    "loadError": "Не удалось загрузить данные.",
     "confirmDelete": "Удалить?",
     "translated": "Переведено: {{count}} языков",
     "translationError": "Ошибка перевода",

@@ -1,4 +1,4 @@
-import { Controller, Get, Query, Param } from '@nestjs/common';
+import { Controller, Get, Query, Param, NotFoundException } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiQuery } from '@nestjs/swagger';
 import { PublicMenuService } from './public-menu.service';
 
@@ -50,23 +50,36 @@ export class PublicMenuController2 {
   @Get(':menuTypeCode/categories/:categoryCode/classifications')
   @ApiOperation({ summary: 'Get wine classifications by category code (public)' })
   @ApiQuery({ name: 'locale', required: false, default: 'ru' })
-  getWineClassifications(
+  async getWineClassifications(
     @Param('menuTypeCode') menuTypeCode: string,
     @Param('categoryCode') categoryCode: string,
     @Query('locale') locale = 'ru',
   ) {
-    return this.publicMenuService.getWineClassificationsByCategoryCode(menuTypeCode, categoryCode, locale);
+    const result = await this.publicMenuService.getWineClassificationsByCategoryCode(
+      menuTypeCode,
+      categoryCode,
+      locale,
+    );
+    if (!result) throw new NotFoundException('Category not found');
+    return result;
   }
 
   @Get(':menuTypeCode/categories/:categoryCode/classifications/:classificationCode/items')
   @ApiOperation({ summary: 'Get items by category and classification code (public)' })
   @ApiQuery({ name: 'locale', required: false, default: 'ru' })
-  getClassificationItems(
+  async getClassificationItems(
     @Param('menuTypeCode') menuTypeCode: string,
     @Param('categoryCode') categoryCode: string,
     @Param('classificationCode') classificationCode: string,
     @Query('locale') locale = 'ru',
   ) {
-    return this.publicMenuService.getCategoryItemsByClassificationCode(menuTypeCode, categoryCode, classificationCode, locale);
+    const result = await this.publicMenuService.getCategoryItemsByClassificationCode(
+      menuTypeCode,
+      categoryCode,
+      classificationCode,
+      locale,
+    );
+    if (!result) throw new NotFoundException('Classification not found');
+    return result;
   }
 }
