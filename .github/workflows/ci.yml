@@ -25,6 +25,10 @@ jobs:
 
       - run: npm ci
 
+      # Without the generated client, `tsc --noEmit` in server fails on a fresh
+      # clone: every Prisma model type resolves to `{}`.
+      - run: npm run prisma:generate -w server
+
       - run: npm run typecheck
 
       - run: npm run build
