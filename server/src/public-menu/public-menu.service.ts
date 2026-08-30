@@ -38,6 +38,7 @@ export type CategoryPublicDto = {
   description: string | null;
   imagePath: string | null;
   hasClassifications: boolean;
+  itemCount: number;
 };
 
 export type WineClassificationPublicDto = {
@@ -221,6 +222,13 @@ export class PublicMenuService {
     });
     const clsCountMap = new Map(classificationsCount.map((r) => [r.categoryId, r._count.id]));
 
+    const itemsCount = await this.prisma.menuItem.groupBy({
+      by: ['categoryId'],
+      where: { categoryId: { in: categoryIds }, isActive: true },
+      _count: { id: true },
+    });
+    const itemCountMap = new Map(itemsCount.map((r) => [r.categoryId, r._count.id]));
+
     const result = categories.map((cat) => {
       const catTr =
         cat.translations.find((r) => r.locale === locale) || cat.translations[0];
@@ -231,6 +239,7 @@ export class PublicMenuService {
         description: catTr?.description ?? null,
         imagePath: cat.imagePath ?? null,
         hasClassifications: (clsCountMap.get(cat.id) ?? 0) > 0,
+        itemCount: itemCountMap.get(cat.id) ?? 0,
       };
     });
 
