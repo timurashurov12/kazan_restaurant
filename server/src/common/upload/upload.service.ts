@@ -4,6 +4,10 @@ import { writeFile } from 'fs/promises';
 import { join } from 'path';
 import * as crypto from 'crypto';
 
+// Keep sharp on the 0.33 line. From 0.34 the prebuilt Linux x64 binaries
+// require the x86-64-v2 microarchitecture, and the production host is a QEMU
+// vCPU without popcnt/sse4_1/sse4_2/ssse3 — so 0.34+ fails to load there and
+// every upload silently falls through to the uncompressed branch below.
 let sharp: ((input: Buffer | string) => import('sharp').Sharp) | null = null;
 try {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
