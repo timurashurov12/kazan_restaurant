@@ -54,6 +54,7 @@ export type CategoryDto = {
   description: string | null;
   imagePath: string | null;
   hasClassifications: boolean;
+  itemCount: number;
 };
 
 export async function fetchCategories(menuTypeCode: string, locale: string) {
