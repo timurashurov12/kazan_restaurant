@@ -1,0 +1,42 @@
+# Production stack: runs prebuilt images published by .github/workflows/ci.yml.
+#
+# Deliberately has no `build:` section. If a pull fails, the deploy must fail
+# loudly rather than silently falling back to building on the server — the box
+# has 2 vCPU / 2 GB RAM and building the server image there risks an OOM while
+# the app is serving traffic.
+#
+# Traefik labels and networks are injected by Dokploy at deploy time and are
+# intentionally absent here.
+#
+# IMAGE_TAG pins a specific build for rollback (e.g. IMAGE_TAG=sha-1a2b3c4);
+# it defaults to the latest green build of main.
+
+services:
+  server:
+    image: ghcr.io/timurashurov12/kazan_restaurant/server:${IMAGE_TAG:-latest}
+    pull_policy: always
+    restart: unless-stopped
+    expose:
+      - "3000"
+    environment:
+      API_PORT: "3000"
+      DATABASE_URL: ${DATABASE_URL}
+      JWT_SECRET: ${JWT_SECRET}
+      CLIENT_URL: ${CLIENT_URL:-http://localhost}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      GROQ_API_KEY: ${GROQ_API_KEY:-}
+      TRANSLATE_PROVIDER: ${TRANSLATE_PROVIDER:-gemini}
+    volumes:
+      - uploads:/app/uploads
+
+  client:
+    image: ghcr.io/timurashurov12/kazan_restaurant/client:${IMAGE_TAG:-latest}
+    pull_policy: always
+    restart: unless-stopped
+    expose:
+      - "80"
+    depends_on:
+      - server
+
+volumes:
+  uploads:
