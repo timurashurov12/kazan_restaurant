@@ -17,9 +17,12 @@ type NestedKeyOf<T> = T extends object
 
 type TranslationKey = NestedKeyOf<typeof translations.ru>;
 
-function getNestedValue(obj: Record<string, any>, path: string): string {
+// Untranslated keys are empty strings in the locale files, not missing ones,
+// so an empty result has to count as "no translation" — otherwise the UI
+// renders blank space where text should be.
+function getNestedValue(obj: Record<string, any>, path: string): string | undefined {
   const result = path.split('.').reduce((acc: any, key: string) => acc?.[key], obj);
-  return typeof result === 'string' ? result : path;
+  return typeof result === 'string' && result.trim() ? result : undefined;
 }
 
 interface I18nContextType {
@@ -41,7 +44,9 @@ export function I18nProvider({ children, forceLocale }: I18nProviderProps) {
     (key: string, params?: Record<string, string | number>): string => {
       const langCode = effectiveLocale.split('-')[0];
       const dict = translations[langCode] || translations.ru || {};
-      let value = getNestedValue(dict, key);
+      // Fall back to Russian for anything a locale has not filled in yet, and
+      // to the key itself only if Russian is missing it too.
+      let value = getNestedValue(dict, key) ?? getNestedValue(translations.ru || {}, key) ?? key;
       if (params) {
         Object.entries(params).forEach(([k, v]) => {
           value = value.replace(new RegExp(`\\{\\{${k}\\}\\}`, 'g'), String(v));
