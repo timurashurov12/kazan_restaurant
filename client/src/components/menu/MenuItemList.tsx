@@ -83,12 +83,16 @@ export function MenuItemList({
                 className="flex gap-3.5 rounded-2xl border border-white/[0.07] bg-gradient-to-br from-stone-900/50 via-[var(--color-app-panel)]/30 to-stone-950/40 p-3.5 shadow-lg cursor-pointer transition-all hover:border-[var(--color-app-accent)]/25 hover:scale-[1.01]"
               >
                 {anyPhoto && (
-                  <div className="relative h-22 w-22 shrink-0 overflow-hidden rounded-2xl bg-stone-950 ring-1 ring-white/6">
+                  // Bigger on phones, where the photo is the whole point and
+                  // there is no hover or wide layout to help. Desktop keeps the
+                  // narrower thumbnail: the row is 672px wide there, so 88px
+                  // already reads fine.
+                  <div className="relative h-32 w-32 sm:h-22 sm:w-22 shrink-0 overflow-hidden rounded-2xl bg-stone-950 ring-1 ring-white/6">
                     {itemImg ? (
                       <img src={itemImg} alt="" loading="lazy" className="h-full w-full object-cover" />
                     ) : (
                       <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-stone-800/90 to-stone-950">
-                        <ChefHat className="h-9 w-9 text-[var(--color-app-accent)]/20" strokeWidth={1.15} />
+                        <ChefHat className="h-12 w-12 sm:h-9 sm:w-9 text-[var(--color-app-accent)]/20" strokeWidth={1.15} />
                       </div>
                     )}
                   </div>
