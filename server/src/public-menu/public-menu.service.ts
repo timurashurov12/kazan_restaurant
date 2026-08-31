@@ -354,7 +354,10 @@ export class PublicMenuService {
       },
     });
 
-    const classificationMap = new Map<string, { id: string; code: string; name: string; itemCount: number }>();
+    const classificationMap = new Map<
+      string,
+      { id: string; code: string; name: string; itemCount: number; sortOrder: number }
+    >();
 
     for (const item of items) {
       if (!item.classification) continue;
@@ -369,11 +372,18 @@ export class PublicMenuService {
           code: cls.code,
           name: tr?.name ?? cls.code,
           itemCount: 1,
+          sortOrder: cls.sortOrder,
         });
       }
     }
 
-    const result = Array.from(classificationMap.values()).sort((a, b) => a.name.localeCompare(b.name));
+    // Order by the admin-managed sortOrder, not the translated name: sorting by
+    // name discards the configured order and produces a different sequence in
+    // each language.
+    const result = Array.from(classificationMap.values())
+      .sort((a, b) => a.sortOrder - b.sortOrder)
+      // sortOrder is an ordering key, not part of the public payload.
+      .map(({ id, code, name, itemCount }) => ({ id, code, name, itemCount }));
     setCache(key, result);
     return result;
   }

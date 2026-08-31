@@ -2,8 +2,8 @@ import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useLocale } from '@/context/LocaleContext';
 import { useTranslations } from '@/i18n';
-import { fetchWineClassifications, fetchClassificationItems } from '@/lib/api';
-import { ArrowLeft, Folder } from 'lucide-react';
+import { fetchCategories, fetchWineClassifications, fetchClassificationItems } from '@/lib/api';
+import { ArrowLeft, ChevronRight } from 'lucide-react';
 import { WINE_COLOR_MAP } from '@/components/menu/item-visuals';
 import { MenuItemList, ItemListSkeleton } from '@/components/menu/MenuItemList';
 
@@ -71,60 +71,85 @@ function ClassificationsListView({
     enabled: !!menuTypeCode && !!categoryCode,
   });
 
+  // Same cache key the categories page uses, so this costs no extra request.
+  const { data: categories } = useQuery({
+    queryKey: ['categories', menuTypeCode, locale],
+    queryFn: () => fetchCategories(menuTypeCode, locale),
+    enabled: !!menuTypeCode,
+  });
+  const currentCategory = categories?.find((c) => c.code === categoryCode);
+
+  const header = (
+    <>
+      {currentCategory && (
+        <h1 className="text-2xl font-bold text-stone-50 mb-6">{currentCategory.name}</h1>
+      )}
+    </>
+  );
+
   if (isLoading) {
     return (
       <PageShell backTo={`/menu/${menuTypeCode}`} backLabel={t('common.backToCategories')}>
-        <div className="grid gap-4 sm:grid-cols-2">
-          {[0, 1, 2].map((i) => (
-            <div key={i} className="h-32 rounded-2xl bg-[var(--color-app-panel)] animate-pulse" />
+        {header}
+        <ul className="space-y-2">
+          {[0, 1, 2, 3].map((i) => (
+            <li key={i} className="h-14 animate-pulse rounded-xl bg-[var(--color-app-panel)]" />
           ))}
-        </div>
+        </ul>
       </PageShell>
     );
   }
 
   return (
     <PageShell backTo={`/menu/${menuTypeCode}`} backLabel={t('common.backToCategories')}>
+      {header}
       {isError ? (
         <p className="text-stone-400 text-center py-12">{t('common.loadError')}</p>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2">
-          <Link
-            to={`/menu/${menuTypeCode}/category/${categoryCode}`}
-            className="group flex flex-col overflow-hidden rounded-2xl border border-white/[0.07] bg-gradient-to-br from-stone-900/50 via-[var(--color-app-panel)]/30 to-stone-950/40 shadow-lg transition-all duration-200 hover:border-[var(--color-app-accent)]/25"
-          >
-            <div className="flex aspect-[5/3] w-full items-center justify-center bg-gradient-to-br from-stone-800/90 to-stone-950">
-              <Folder className="h-14 w-14 text-[var(--color-app-accent)]/22" strokeWidth={1.1} />
-            </div>
-            <div className="flex items-center justify-between border-t border-white/6 bg-black/15 px-4 py-4">
-              <span className="text-base font-semibold text-stone-100">{t('common.allItems')}</span>
-            </div>
-          </Link>
-          {classifications?.map((cls) => (
-            <Link
-              key={cls.id}
-              to={`/menu/${menuTypeCode}/category/${categoryCode}/classification/${cls.code}`}
-              className="group flex flex-col overflow-hidden rounded-2xl border border-white/[0.07] bg-gradient-to-br from-stone-900/50 via-[var(--color-app-panel)]/30 to-stone-950/40 shadow-lg transition-all duration-200 hover:border-[var(--color-app-accent)]/25"
-            >
-              <div className="flex aspect-[5/3] w-full items-center justify-center bg-gradient-to-br from-stone-800/90 to-stone-950">
-                <Folder className="h-14 w-14 text-[var(--color-app-accent)]/22" strokeWidth={1.1} />
-              </div>
-              <div className="flex items-center justify-between border-t border-white/6 bg-black/15 px-4 py-4">
-                <span className="flex items-center gap-2 text-base font-semibold text-stone-100">
-                  {WINE_COLOR_MAP[cls.code] && (
-                    <span className={`w-3 h-3 rounded-full shrink-0 ${WINE_COLOR_MAP[cls.code].bg}`} />
-                  )}
+        // A list, not a showcase: WineClassification has no image field at all,
+        // so the tall tiles could only ever hold the same folder glyph.
+        <ul className="space-y-2">
+          <li>
+            <Row to={`/menu/${menuTypeCode}/category/${categoryCode}`} count={currentCategory?.itemCount}>
+              {t('common.allItems')}
+            </Row>
+          </li>
+          {classifications?.map((cls) => {
+            const dot = WINE_COLOR_MAP[cls.code];
+            return (
+              <li key={cls.id}>
+                <Row
+                  to={`/menu/${menuTypeCode}/category/${categoryCode}/classification/${cls.code}`}
+                  count={cls.itemCount}
+                >
+                  {dot && <span className={`h-2.5 w-2.5 shrink-0 rounded-full ${dot.bg}`} title={dot.title} />}
                   {cls.name}
-                </span>
-                {/* Bare number: reads as a count next to a name in any language
-                    and sidesteps Russian plural forms. */}
-                <span className="text-xs tabular-nums text-stone-500">{cls.itemCount}</span>
-              </div>
-            </Link>
-          ))}
-        </div>
+                </Row>
+              </li>
+            );
+          })}
+        </ul>
       )}
     </PageShell>
+  );
+}
+
+function Row({ to, count, children }: { to: string; count?: number; children: React.ReactNode }) {
+  return (
+    <Link
+      to={to}
+      className="group flex items-center gap-3 rounded-xl border border-white/[0.07] bg-gradient-to-br from-stone-900/50 to-stone-950/40 px-4 py-4 shadow-sm transition-[transform,border-color] duration-150 hover:border-[var(--color-app-accent)]/25 active:scale-[0.99]"
+    >
+      <span className="flex min-w-0 flex-1 items-center gap-2 truncate text-[15px] font-medium text-stone-100">
+        {children}
+      </span>
+      {/* Bare number: reads as a count next to a name in any language and
+          sidesteps Russian plural forms. */}
+      {count !== undefined && (
+        <span className="shrink-0 text-xs tabular-nums text-stone-500">{count}</span>
+      )}
+      <ChevronRight className="h-4 w-4 shrink-0 text-[var(--color-app-accent)]/55 transition group-hover:translate-x-0.5 group-hover:text-[var(--color-app-accent)]" />
+    </Link>
   );
 }
 
