@@ -2,55 +2,10 @@ import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useLocale } from '@/context/LocaleContext';
 import { useTranslations } from '@/i18n';
-import { fetchWineClassifications, fetchClassificationItems, publicUploadUrl, type MenuItemDto } from '@/lib/api';
-import { useState, useMemo, useEffect } from 'react';
-import { ArrowLeft, Folder, LayoutGrid, ChefHat, Search, X, Leaf, Star } from 'lucide-react';
-
-const BADGE_ICONS: Record<string, { icon: React.ComponentType<{ className?: string }>; color: string; bg: string; label: string }> = {
-  vegetarian: { icon: Leaf, color: 'text-emerald-400', bg: 'bg-emerald-500/15', label: 'Vegetarian' },
-  top: { icon: Star, color: 'text-amber-400', bg: 'bg-amber-500/15', label: 'Top' },
-};
-
-const WINE_COLOR_MAP: Record<string, { bg: string; title: string }> = {
-  red: { bg: 'bg-red-500', title: 'Красное' },
-  white: { bg: 'bg-amber-200', title: 'Белое' },
-  rose: { bg: 'bg-pink-400', title: 'Розовое' },
-  sparkling: { bg: 'bg-yellow-300', title: 'Игристое' },
-};
-
-const PRICE_LABELS: Record<string, Record<string, string>> = {
-  glass: { ru: 'Бокал', en: 'Glass' },
-  shot: { ru: 'Стопка', en: 'Shot' },
-  cup: { ru: 'Кружка', en: 'Cup' },
-};
-
-const REGION_FLAGS: Record<string, string> = {
-  'Кахетия': '🇬🇪', 'Kakheti': '🇬🇪',
-  'Имерети': '🇬🇪', 'Imereti': '🇬🇪',
-  'Бордо': '🇫🇷', 'Bordeaux': '🇫🇷',
-  'Бургундия': '🇫🇷', 'Burgundy': '🇫🇷',
-  'Тоскана': '🇮🇹', 'Tuscany': '🇮🇹',
-  'Риоха': '🇪🇸', 'Rioja': '🇪🇸',
-  'Маргарет-Ривер': '🇦🇺', 'Margaret River': '🇦🇺',
-  'Узбекистан': '🇺🇿', 'Uzbekistan': '🇺🇿',
-};
-
-function getRegionFlag(regionName: string): string {
-  return REGION_FLAGS[regionName] || '';
-}
-
-function matchSearch(text: string | null, query: string): boolean {
-  if (!text) return false;
-  return text.toLowerCase().includes(query.toLowerCase().trim());
-}
-
-function filterItemsBySearch(items: MenuItemDto[], query: string): MenuItemDto[] {
-  const q = query.trim().toLowerCase();
-  if (!q) return items;
-  return items.filter(
-    (item) => matchSearch(item.name, query) || matchSearch(item.description, query)
-  );
-}
+import { fetchWineClassifications, fetchClassificationItems } from '@/lib/api';
+import { ArrowLeft, Folder } from 'lucide-react';
+import { WINE_COLOR_MAP } from '@/components/menu/item-visuals';
+import { MenuItemList, ItemListSkeleton } from '@/components/menu/MenuItemList';
 
 export function WineClassificationsPage() {
   const { menuTypeCode, categoryCode, classificationCode } = useParams<{
@@ -80,6 +35,25 @@ export function WineClassificationsPage() {
   );
 }
 
+function PageShell({ backTo, backLabel, children }: { backTo: string; backLabel: string; children: React.ReactNode }) {
+  return (
+    <div className="min-h-screen" style={{ backgroundColor: 'var(--color-app-bg)' }}>
+      <div className="p-4 max-w-2xl mx-auto pb-8 animate-in">
+        <div className="mb-6">
+          <Link
+            to={backTo}
+            className="flex items-center gap-2 text-sm text-stone-400 hover:text-[var(--color-app-accent)] transition"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            {backLabel}
+          </Link>
+        </div>
+        {children}
+      </div>
+    </div>
+  );
+}
+
 function ClassificationsListView({
   menuTypeCode,
   categoryCode,
@@ -99,73 +73,58 @@ function ClassificationsListView({
 
   if (isLoading) {
     return (
-      <div className="min-h-screen" style={{ backgroundColor: 'var(--color-app-bg)' }}>
-        <div className="p-4 max-w-2xl mx-auto pb-8 animate-in">
-          <div className="h-10 bg-[var(--color-app-panel)] rounded-lg w-1/3 animate-pulse mb-6" />
-          <div className="grid gap-4 sm:grid-cols-2">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="h-32 rounded-2xl bg-[var(--color-app-panel)] animate-pulse" />
-            ))}
-          </div>
+      <PageShell backTo={`/menu/${menuTypeCode}`} backLabel={t('common.backToCategories')}>
+        <div className="grid gap-4 sm:grid-cols-2">
+          {[0, 1, 2].map((i) => (
+            <div key={i} className="h-32 rounded-2xl bg-[var(--color-app-panel)] animate-pulse" />
+          ))}
         </div>
-      </div>
+      </PageShell>
     );
   }
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: 'var(--color-app-bg)' }}>
-      <div className="p-4 max-w-2xl mx-auto pb-8 animate-in">
-        <div className="mb-6">
+    <PageShell backTo={`/menu/${menuTypeCode}`} backLabel={t('common.backToCategories')}>
+      {isError ? (
+        <p className="text-stone-400 text-center py-12">{t('common.loadError')}</p>
+      ) : (
+        <div className="grid gap-4 sm:grid-cols-2">
           <Link
-            to={`/menu/${menuTypeCode}`}
-            className="flex items-center gap-2 text-sm text-stone-400 hover:text-[var(--color-app-accent)] transition"
+            to={`/menu/${menuTypeCode}/category/${categoryCode}`}
+            className="group flex flex-col overflow-hidden rounded-2xl border border-white/[0.07] bg-gradient-to-br from-stone-900/50 via-[var(--color-app-panel)]/30 to-stone-950/40 shadow-lg transition-all duration-200 hover:border-[var(--color-app-accent)]/25"
           >
-            <ArrowLeft className="h-4 w-4" />
-            {t('common.backToCategories')}
+            <div className="flex aspect-[5/3] w-full items-center justify-center bg-gradient-to-br from-stone-800/90 to-stone-950">
+              <Folder className="h-14 w-14 text-[var(--color-app-accent)]/22" strokeWidth={1.1} />
+            </div>
+            <div className="flex items-center justify-between border-t border-white/6 bg-black/15 px-4 py-4">
+              <span className="text-base font-semibold text-stone-100">{t('common.allItems')}</span>
+            </div>
           </Link>
-        </div>
-
-        {isError ? (
-          <p className="text-stone-400 text-center py-12">{t('common.loadError')}</p>
-        ) : (
-          <div className="grid gap-4 sm:grid-cols-2">
+          {classifications?.map((cls) => (
             <Link
-              to={`/menu/${menuTypeCode}/category/${categoryCode}`}
+              key={cls.id}
+              to={`/menu/${menuTypeCode}/category/${categoryCode}/classification/${cls.code}`}
               className="group flex flex-col overflow-hidden rounded-2xl border border-white/[0.07] bg-gradient-to-br from-stone-900/50 via-[var(--color-app-panel)]/30 to-stone-950/40 shadow-lg transition-all duration-200 hover:border-[var(--color-app-accent)]/25"
             >
               <div className="flex aspect-[5/3] w-full items-center justify-center bg-gradient-to-br from-stone-800/90 to-stone-950">
-                <LayoutGrid className="h-14 w-14 text-[var(--color-app-accent)]/22" strokeWidth={1.1} />
+                <Folder className="h-14 w-14 text-[var(--color-app-accent)]/22" strokeWidth={1.1} />
               </div>
               <div className="flex items-center justify-between border-t border-white/6 bg-black/15 px-4 py-4">
-                <span className="text-base font-semibold text-stone-100">{t('common.allItems')}</span>
+                <span className="flex items-center gap-2 text-base font-semibold text-stone-100">
+                  {WINE_COLOR_MAP[cls.code] && (
+                    <span className={`w-3 h-3 rounded-full shrink-0 ${WINE_COLOR_MAP[cls.code].bg}`} />
+                  )}
+                  {cls.name}
+                </span>
+                {/* Bare number: reads as a count next to a name in any language
+                    and sidesteps Russian plural forms. */}
+                <span className="text-xs tabular-nums text-stone-500">{cls.itemCount}</span>
               </div>
             </Link>
-            {classifications?.map((cls) => (
-              <Link
-                key={cls.id}
-                to={`/menu/${menuTypeCode}/category/${categoryCode}/classification/${cls.code}`}
-                className="group flex flex-col overflow-hidden rounded-2xl border border-white/[0.07] bg-gradient-to-br from-stone-900/50 via-[var(--color-app-panel)]/30 to-stone-950/40 shadow-lg transition-all duration-200 hover:border-[var(--color-app-accent)]/25"
-              >
-                <div className="flex aspect-[5/3] w-full items-center justify-center bg-gradient-to-br from-stone-800/90 to-stone-950">
-                  <Folder className="h-14 w-14 text-[var(--color-app-accent)]/22" strokeWidth={1.1} />
-                </div>
-                <div className="flex items-center justify-between border-t border-white/6 bg-black/15 px-4 py-4">
-                  <span className="flex items-center gap-2 text-base font-semibold text-stone-100">
-                    {WINE_COLOR_MAP[cls.code] && (
-                      <span className={`w-3 h-3 rounded-full shrink-0 ${WINE_COLOR_MAP[cls.code].bg}`} />
-                    )}
-                    {cls.name}
-                  </span>
-                  <span className="text-xs text-stone-500">
-                    {cls.itemCount} {t('common.currency') === 'сум' ? 'поз.' : 'items'}
-                  </span>
-                </div>
-              </Link>
-            ))}
-          </div>
-        )}
-      </div>
-    </div>
+          ))}
+        </div>
+      )}
+    </PageShell>
   );
 }
 
@@ -181,8 +140,6 @@ function ClassificationItemsView({
   locale: string;
 }) {
   const { t } = useTranslations();
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedItem, setSelectedItem] = useState<MenuItemDto | null>(null);
 
   const { data: items, isLoading, isError } = useQuery({
     queryKey: ['classification-items', menuTypeCode, categoryCode, classificationCode, locale],
@@ -190,240 +147,25 @@ function ClassificationItemsView({
     enabled: !!menuTypeCode && !!categoryCode && !!classificationCode,
   });
 
-  const filteredItems = useMemo(
-    () => (items ? filterItemsBySearch(items, searchQuery) : []),
-    [items, searchQuery]
-  );
-
-  useEffect(() => {
-    if (selectedItem) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
-    return () => { document.body.style.overflow = ''; };
-  }, [selectedItem]);
+  const backTo = `/menu/${menuTypeCode}/category/${categoryCode}/classifications`;
 
   if (isLoading) {
     return (
-      <div className="min-h-screen" style={{ backgroundColor: 'var(--color-app-bg)' }}>
-        <div className="p-4 max-w-2xl mx-auto pb-8 animate-in">
-          <div className="h-10 bg-[var(--color-app-panel)] rounded-lg w-1/3 animate-pulse mb-6" />
-          <div className="space-y-3">
-            {[1, 2, 3, 4, 5].map((i) => (
-              <div key={i} className="flex gap-4 rounded-2xl border border-white/[0.07] bg-[var(--color-app-panel)]/40 p-3.5 animate-pulse">
-                <div className="w-24 h-24 shrink-0 rounded-2xl bg-stone-800/80" />
-                <div className="flex-1 space-y-2 py-1">
-                  <div className="h-4 bg-stone-700/80 rounded w-3/4" />
-                  <div className="h-3 bg-stone-800/80 rounded w-full" />
-                  <div className="h-6 bg-stone-800/60 rounded-full w-24 ml-auto" />
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
+      <PageShell backTo={backTo} backLabel={t('common.backToCategories')}>
+        <ItemListSkeleton />
+      </PageShell>
     );
   }
 
-  const isEmpty = !items?.length;
-  const hasSearch = searchQuery.trim().length > 0;
-  const numberLocale = locale || 'ru-RU';
-
   return (
-    <div className="min-h-screen" style={{ backgroundColor: 'var(--color-app-bg)' }}>
-      <div className="p-4 max-w-2xl mx-auto pb-8 animate-in">
-        <div className="mb-6">
-          <Link
-            to={`/menu/${menuTypeCode}/category/${categoryCode}/classifications`}
-            className="flex items-center gap-2 text-sm text-stone-400 hover:text-[var(--color-app-accent)] transition"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            {t('common.backToCategories')}
-          </Link>
-        </div>
-
-        {isError ? (
-          <p className="text-stone-400 text-center py-12">{t('common.loadError')}</p>
-        ) : isEmpty ? (
-          <p className="text-stone-400 text-center py-12">{t('common.emptySection')}</p>
-        ) : (
-          <>
-            <div className="sticky top-0 z-20 pb-4 -mx-4 px-4 pt-4 mb-6 border-b border-[var(--color-border)]" style={{ backgroundColor: 'var(--color-app-bg)' }}>
-              <div className="relative mb-4">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-500 pointer-events-none" />
-                <input
-                  type="search"
-                  placeholder={t('common.search')}
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[var(--color-app-panel)] border border-[var(--color-border)] text-stone-100 placeholder:text-stone-500 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-app-accent)]/40"
-                />
-              </div>
-            </div>
-
-            {filteredItems.length > 0 ? (
-              <ul className="space-y-3">
-                {filteredItems.map((item) => {
-                  const itemImg = publicUploadUrl(item.imagePath);
-                  return (
-                    <li
-                      key={item.id}
-                      onClick={() => setSelectedItem(item)}
-                      className="flex gap-3.5 rounded-2xl border border-white/[0.07] bg-gradient-to-br from-stone-900/50 via-[var(--color-app-panel)]/30 to-stone-950/40 p-3.5 shadow-lg cursor-pointer transition-all hover:border-[var(--color-app-accent)]/25 hover:scale-[1.01]"
-                    >
-                      <div className="relative h-22 w-22 shrink-0 overflow-hidden rounded-2xl bg-stone-950 ring-1 ring-white/6">
-                        {itemImg ? (
-                          <img src={itemImg} alt="" loading="lazy" className="h-full w-full object-cover" />
-                        ) : (
-                          <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-stone-800/90 to-stone-950">
-                            <ChefHat className="h-9 w-9 text-[var(--color-app-accent)]/20" strokeWidth={1.15} />
-                          </div>
-                        )}
-                      </div>
-                      <div className="flex min-w-0 flex-1 flex-col justify-between gap-3 py-0.5">
-                        <div className="min-w-0 space-y-1">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <h3 className="text-sm font-semibold text-stone-50">{item.name}</h3>
-                            {item.badges?.map((badge) => {
-                              const cfg = BADGE_ICONS[badge];
-                              if (!cfg) return null;
-                              const Icon = cfg.icon;
-                              return (
-                                <span key={badge} className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-medium ${cfg.bg} ${cfg.color}`}>
-                                  <Icon className="w-2.5 h-2.5" />
-                                </span>
-                              );
-                            })}
-                          </div>
-                          {item.description && (
-                            <p className="line-clamp-2 text-xs text-stone-400">{item.description}</p>
-                          )}
-                          <div className="flex items-center gap-2 flex-wrap">
-                            {item.weightOrVolume && (
-                              <p className="text-[11px] font-medium uppercase tracking-[0.12em] text-stone-500">
-                                {item.weightOrVolume}
-                              </p>
-                            )}
-                            {item.region && (
-                              <p className="text-[11px] text-stone-500">
-                                {getRegionFlag(item.region.name)} {item.region.name}
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                        <div className="space-y-1">
-                          <span className="text-lg font-semibold tabular-nums text-[var(--color-app-accent)]">
-                            {Number(item.price).toLocaleString(numberLocale)} {t('common.currency')}
-                          </span>
-                          {item.prices && Object.keys(item.prices).length > 0 && (
-                            <div className="flex flex-wrap gap-x-3 gap-y-0.5">
-                              {Object.entries(item.prices).map(([key, val]) => (
-                                <span key={key} className="text-xs text-stone-500">
-                                  {PRICE_LABELS[key]?.[locale === 'en' ? 'en' : 'ru'] || key}: {Number(val).toLocaleString(numberLocale)}
-                                </span>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </li>
-                  );
-                })}
-              </ul>
-            ) : (
-              <p className="text-stone-400 text-center py-12">
-                {hasSearch ? t('common.noResults') : t('common.emptySection')}
-              </p>
-            )}
-          </>
-        )}
-      </div>
-
-      {selectedItem && (
-        <ItemModal item={selectedItem} onClose={() => setSelectedItem(null)} numberLocale={numberLocale} currencyLabel={t('common.currency')} locale={locale} />
+    <PageShell backTo={backTo} backLabel={t('common.backToCategories')}>
+      {isError ? (
+        <p className="text-stone-400 text-center py-12">{t('common.loadError')}</p>
+      ) : (
+        // Every item here has the same classification, so repeating it on each
+        // row would be noise.
+        <MenuItemList items={items ?? []} showClassification={false} />
       )}
-    </div>
-  );
-}
-
-function ItemModal({ item, onClose, numberLocale, currencyLabel, locale }: { item: MenuItemDto; onClose: () => void; numberLocale: string; currencyLabel: string; locale: string }) {
-  const img = publicUploadUrl(item.imagePath);
-
-  return (
-    <div
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/60 backdrop-blur-sm"
-      onClick={(e) => e.target === e.currentTarget && onClose()}
-    >
-      <div className="w-full sm:max-w-md max-h-[85vh] overflow-y-auto rounded-t-3xl sm:rounded-2xl border border-[var(--color-border)] bg-[var(--color-app-panel)] animate-in">
-        {img && (
-          <div className="relative aspect-[4/3] w-full overflow-hidden rounded-t-3xl sm:rounded-t-2xl bg-stone-950">
-            <img src={img} alt="" className="h-full w-full object-cover" />
-            <button
-              onClick={onClose}
-              className="absolute top-3 right-3 p-2 rounded-full bg-black/50 backdrop-blur-sm text-white hover:bg-black/70 transition"
-            >
-              <X className="w-5 h-5" />
-            </button>
-          </div>
-        )}
-
-        <div className="p-5 space-y-4">
-          {!img && (
-            <div className="flex justify-end">
-              <button
-                onClick={onClose}
-                className="p-2 rounded-full bg-[var(--color-app-bg)] text-stone-400 hover:text-stone-200 transition"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-          )}
-
-          <div>
-            <div className="flex items-center gap-2 flex-wrap">
-              <h2 className="text-xl font-semibold text-stone-50">{item.name}</h2>
-              {item.badges?.map((badge) => {
-                const cfg = BADGE_ICONS[badge];
-                if (!cfg) return null;
-                const Icon = cfg.icon;
-                return (
-                  <span key={badge} className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium ${cfg.bg} ${cfg.color}`}>
-                    <Icon className="w-3 h-3" />
-                    {cfg.label}
-                  </span>
-                );
-              })}
-            </div>
-            {item.weightOrVolume && (
-              <p className="mt-1 text-sm text-stone-500 uppercase tracking-wide">{item.weightOrVolume}</p>
-            )}
-            {item.region && (
-              <p className="mt-1 text-xs text-stone-500">{getRegionFlag(item.region.name)} {item.region.name}</p>
-            )}
-          </div>
-
-          {item.description && (
-            <p className="text-sm text-stone-400 leading-relaxed">{item.description}</p>
-          )}
-
-          <div className="pt-2 border-t border-[var(--color-border)] space-y-2">
-            <span className="text-2xl font-bold tabular-nums text-[var(--color-app-accent)]">
-              {Number(item.price).toLocaleString(numberLocale)} {currencyLabel}
-            </span>
-            {item.prices && Object.keys(item.prices).length > 0 && (
-              <div className="space-y-1">
-                {Object.entries(item.prices).map(([key, val]) => (
-                  <div key={key} className="flex justify-between text-sm">
-                    <span className="text-stone-400">{PRICE_LABELS[key]?.[locale === 'en' ? 'en' : 'ru'] || key}</span>
-                    <span className="font-medium text-stone-200 tabular-nums">{Number(val).toLocaleString(numberLocale)} {currencyLabel}</span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-    </div>
+    </PageShell>
   );
 }

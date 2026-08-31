@@ -3,7 +3,9 @@ dist/
 .env*
 *.log
 uploads/
-menu
+# Без ведущего слеша это правило матчило любой каталог с именем menu,
+# включая client/src/components/menu. Нужна только папка в корне.
+/menu/
 .mimocode/
 .agents/
 *.tsbuildinfo
