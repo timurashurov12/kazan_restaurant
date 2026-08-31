@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { ChefHat, Search } from 'lucide-react';
 import { useLocale } from '@/context/LocaleContext';
 import { useTranslations } from '@/i18n';
-import { publicUploadUrl, type MenuItemDto } from '@/lib/api';
+import { publicUploadUrl, thumbUploadUrl, type MenuItemDto } from '@/lib/api';
 import {
   BADGE_ICONS,
   SEARCH_MIN_ITEMS,
@@ -74,6 +74,7 @@ export function MenuItemList({
         <ul className="space-y-3">
           {filteredItems.map((item) => {
             const itemImg = publicUploadUrl(item.imagePath);
+            const itemThumb = thumbUploadUrl(item.imagePath);
             const cls = item.classification;
             const dot = cls ? WINE_COLOR_MAP[cls.code] : undefined;
             return (
@@ -88,8 +89,19 @@ export function MenuItemList({
                   // narrower thumbnail: the row is 672px wide there, so 88px
                   // already reads fine.
                   <div className="relative h-32 w-32 sm:h-22 sm:w-22 shrink-0 overflow-hidden rounded-2xl bg-stone-950 ring-1 ring-white/6">
-                    {itemImg ? (
-                      <img src={itemImg} alt="" loading="lazy" className="h-full w-full object-cover" />
+                    {itemThumb ? (
+                      <img
+                        src={itemThumb}
+                        alt=""
+                        loading="lazy"
+                        className="h-full w-full object-cover"
+                        // Uploads that predate thumbnails have none; fall back
+                        // to the full image instead of showing a broken one.
+                        onError={(e) => {
+                          const el = e.currentTarget;
+                          if (itemImg && !el.src.endsWith(itemImg)) el.src = itemImg;
+                        }}
+                      />
                     ) : (
                       <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-stone-800/90 to-stone-950">
                         <ChefHat className="h-12 w-12 sm:h-9 sm:w-9 text-[var(--color-app-accent)]/20" strokeWidth={1.15} />

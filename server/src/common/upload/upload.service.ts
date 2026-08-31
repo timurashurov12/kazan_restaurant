@@ -34,15 +34,40 @@ export class UploadService {
     }
   }
 
+  // The modal shows the image at roughly 400px wide, the lists at 128px on a
+  // phone — 384 device pixels at 3x. Serving one 1200px file to both means the
+  // list downloads about six times what it can display, on every row.
+  private static readonly FULL_PX = 1200;
+  private static readonly THUMB_PX = 400;
+
   async saveFile(file: Express.Multer.File): Promise<string> {
     if (sharp) {
-      const filename = `${crypto.randomUUID()}.webp`;
-      const filepath = join(this.uploadsDir, filename);
+      const id = crypto.randomUUID();
+      const filename = `${id}.webp`;
       try {
         await sharp(file.buffer)
-          .resize(1200, 1200, { fit: 'inside', withoutEnlargement: true })
+          .resize(UploadService.FULL_PX, UploadService.FULL_PX, {
+            fit: 'inside',
+            withoutEnlargement: true,
+          })
           .webp({ quality: 80 })
-          .toFile(filepath);
+          .toFile(join(this.uploadsDir, filename));
+
+        // Derived by convention from the stored path, so nothing extra goes
+        // into the database. Its absence is not fatal: the client falls back
+        // to the full image, which is what images predating this do.
+        try {
+          await sharp(file.buffer)
+            .resize(UploadService.THUMB_PX, UploadService.THUMB_PX, {
+              fit: 'inside',
+              withoutEnlargement: true,
+            })
+            .webp({ quality: 72 })
+            .toFile(join(this.uploadsDir, `${id}.thumb.webp`));
+        } catch (err) {
+          this.logger.warn(`thumbnail generation failed for ${filename}: ${err}`);
+        }
+
         return `/uploads/${filename}`;
       } catch (err) {
         this.logger.warn(`sharp processing failed, saving original: ${err}`);

@@ -10,6 +10,21 @@ export function publicUploadUrl(imagePath: string | null | undefined): string | 
   return `${API_BASE.replace(/\/$/, '')}${path}`;
 }
 
+/**
+ * Lists render this image at 88-128px, so serving them the 1200px file the
+ * modal needs is about six times the bytes. UploadService writes a
+ * `.thumb.webp` beside each upload; the name is derived here rather than
+ * stored, so the API and the database are untouched.
+ *
+ * Images uploaded before thumbnails existed have none, so callers must fall
+ * back to the full image when this 404s.
+ */
+export function thumbUploadUrl(imagePath: string | null | undefined): string | null {
+  const full = publicUploadUrl(imagePath);
+  if (!full) return null;
+  return full.endsWith('.webp') ? full.replace(/\.webp$/, '.thumb.webp') : full;
+}
+
 export async function fetchMenuTypes(locale: string) {
   const res = await fetch(`${API_BASE}/menu-types?locale=${encodeURIComponent(locale)}`);
   if (!res.ok) throw new Error('Failed to fetch menu types');
