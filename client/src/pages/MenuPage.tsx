@@ -18,6 +18,8 @@ const WINE_COLOR_MAP: Record<string, { bg: string; title: string }> = {
   sparkling: { bg: 'bg-yellow-300', title: 'Игристое' },
 };
 
+const SEARCH_MIN_ITEMS = 8;
+
 const PRICE_LABELS: Record<string, Record<string, string>> = {
   glass: { ru: 'Бокал', en: 'Glass' },
   shot: { ru: 'Стопка', en: 'Shot' },
@@ -112,6 +114,13 @@ export function MenuPage() {
   const isEmpty = !items?.length;
   const hasSearch = searchQuery.trim().length > 0;
   const numberLocale = locale || 'ru-RU';
+  // Below this the whole list is on screen at once and the sticky search box
+  // costs a fifth of the viewport to save nobody any scrolling.
+  const showSearch = (items?.length ?? 0) >= SEARCH_MIN_ITEMS;
+  // Categories like Гарниры and Соусы have no photos at all; reserving the
+  // 88px slot there leaves a column of empty squares. Keep it as soon as one
+  // item has a photo, so rows stay aligned within a category.
+  const anyPhoto = !!items?.some((i) => i.imagePath);
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: 'var(--color-app-bg)' }}>
@@ -134,6 +143,7 @@ export function MenuPage() {
           <p className="text-stone-400 text-center py-12">{t('common.emptySection')}</p>
         ) : (
           <>
+            {showSearch && (
             <div className="sticky top-0 z-20 pb-4 -mx-4 px-4 pt-4 mb-6 border-b border-[var(--color-border)]" style={{ backgroundColor: 'var(--color-app-bg)' }}>
               <div className="relative mb-4">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-500 pointer-events-none" />
@@ -146,6 +156,7 @@ export function MenuPage() {
                 />
               </div>
             </div>
+            )}
 
             {filteredItems.length > 0 ? (
               <ul className="space-y-3">
@@ -157,15 +168,17 @@ export function MenuPage() {
                       onClick={() => setSelectedItem(item)}
                       className="flex gap-3.5 rounded-2xl border border-white/[0.07] bg-gradient-to-br from-stone-900/50 via-[var(--color-app-panel)]/30 to-stone-950/40 p-3.5 shadow-lg cursor-pointer transition-all hover:border-[var(--color-app-accent)]/25 hover:scale-[1.01]"
                     >
-                      <div className="relative h-22 w-22 shrink-0 overflow-hidden rounded-2xl bg-stone-950 ring-1 ring-white/6">
-                        {itemImg ? (
-                          <img src={itemImg} alt="" loading="lazy" className="h-full w-full object-cover" />
-                        ) : (
-                          <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-stone-800/90 to-stone-950">
-                            <ChefHat className="h-9 w-9 text-[var(--color-app-accent)]/20" strokeWidth={1.15} />
-                          </div>
-                        )}
-                      </div>
+                      {anyPhoto && (
+                        <div className="relative h-22 w-22 shrink-0 overflow-hidden rounded-2xl bg-stone-950 ring-1 ring-white/6">
+                          {itemImg ? (
+                            <img src={itemImg} alt="" loading="lazy" className="h-full w-full object-cover" />
+                          ) : (
+                            <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-stone-800/90 to-stone-950">
+                              <ChefHat className="h-9 w-9 text-[var(--color-app-accent)]/20" strokeWidth={1.15} />
+                            </div>
+                          )}
+                        </div>
+                      )}
                       <div className="flex min-w-0 flex-1 flex-col justify-between gap-3 py-0.5">
                         <div className="min-w-0 space-y-1">
                           <div className="flex items-center gap-2 flex-wrap">
